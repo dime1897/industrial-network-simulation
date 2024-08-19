@@ -45,7 +45,7 @@ class Siemens:
         self._processing_failure_rate, self._quality_assurance_failure_rate, self._defect_rate, self._discarding_or_sending_failure_rate = 0.20, 0.35, 0.5, 0.45
 
         # Azzeramento dei contatori
-        self._tot_production, self._tot_defected = 58, 0
+        self._tot_production, self._tot_defected = 0, 0
 
         # Creazione del server
         self._server = snp.server.Server()
@@ -62,11 +62,7 @@ class Siemens:
         self._server.register_area(srvAreaMK, 0, self._MK)  # Merker Memory
         for i in range(self._data_block_number):
             self._DB[i] = (ct.c_uint8 * 4)() # I Data Block dono da 4 byte l'uno
-            self._server.register_area(srvAreaDB, i+1, self._DB[i])  # Data Blocks
-
-        bytes = self._tot_production.to_bytes(4, byteorder = 'big', signed = False)
-        for i in range(4):
-            self._DB[0][i] = bytes[i]
+            self._server.register_area(srvAreaDB, i, self._DB[i])  # Data Blocks
         
         # Configurazione del logger
         self._log = loguru.logger
@@ -111,6 +107,9 @@ class Siemens:
 
             # Aggiorniamo il contatore
             self._tot_defected += 1
+            bytes = self._tot_defected.to_bytes(4, byteorder = 'big', signed = False)
+            for i in range(4):
+                self._DB[1][i] = bytes[i]
 
             if rnd.random() < self._discarding_or_sending_failure_rate:
                 self._PE[6] = True
@@ -124,6 +123,10 @@ class Siemens:
 
             # Aggiorniamo il contatore
             self._tot_production += 1
+            bytes = self._tot_production.to_bytes(4, byteorder = 'big', signed = False)
+            for i in range(4):
+                self._DB[0][i] = bytes[i]
+
 
             if rnd.random() < self._discarding_or_sending_failure_rate:
                 self._PE[6] = True

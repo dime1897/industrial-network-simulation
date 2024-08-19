@@ -114,8 +114,10 @@ class Client:
         self._log.debug("Lettura dell'area DB")
 
         # Lettura: Leggo tutta l'area DB
+        read_db = self._client.read_area(Areas.DB, 0, 0, 4)
+        self._log.debug(f"Area DB0 (tot_product): {int.from_bytes(read_db, byteorder = 'big', signed = False)}")
         read_db = self._client.read_area(Areas.DB, 1, 0, 4)
-        self._log.debug(f"Area DB: {int.from_bytes(read_db, byteorder = 'big', signed = False)}")
+        self._log.debug(f"Area DB1 (tot_defected): {int.from_bytes(read_db, byteorder = 'big', signed = False)}")
 
 if __name__ == '__main__':
 
