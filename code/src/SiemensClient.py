@@ -1,86 +1,131 @@
+import loguru
 import snap7.client as c
 from snap7.util import *
 from snap7.types import *
 
-def write_and_read_PA(client):
-    # Scrittura e lettura dell'area PA (Process Output Area)
-    print("Scrittura e lettura dell'area PA (Process Output Area):")
-    
-    # Scrittura: Setto il bit 0 del primo byte dell'area PA a True
-    pa_data = (ctypes.c_uint8 * 1)()
-    set_bool(pa_data, 0, 0, True)
-    client.write_area(Areas.PA, 0, 0, pa_data)
-    
-    # Lettura: Leggo il primo byte dell'area PA
-    read_pa = client.read_area(Areas.PA, 0, 0, 1)
-    print(f"Valore del bit 0 di PA0.0: {get_bool(read_pa, 0, 0)}")
+class Client:
 
-def write_and_read_PE(client):
-    # Scrittura e lettura dell'area PE (Process Input Area)
-    print("Scrittura e lettura dell'area PE (Process Input Area):")
-    
-    # Scrittura: Setto il bit 0 del primo byte dell'area PE a True
-    pe_data = (ctypes.c_uint8 * 1)()
-    set_bool(pe_data, 0, 0, True)
-    client.write_area(Areas.PE, 0, 0, pe_data)
-    
-    # Lettura: Leggo il primo byte dell'area PE
-    read_pe = client.read_area(Areas.PE, 0, 0, 1)
-    print(f"Valore del bit 0 di PE0.0: {get_bool(read_pe, 0, 0)}")
+    # Logger
+    _log: None
 
-def write_and_read_MK(client):
-    # Scrittura e lettura dell'area MK (Merker Area)
-    print("Scrittura e lettura dell'area MK (Merker):")
-    
-    # Scrittura: Setto il bit 0 del primo byte dell'area MK a True
-    mk_data = (ctypes.c_uint8 * 1)()
-    set_bool(mk_data, 0, 0, True)
-    client.write_area(Areas.MK, 0, 0, mk_data)
-    
-    # Lettura: Leggo il primo byte dell'area MK
-    read_mk = client.read_area(Areas.MK, 0, 0, 1)
-    print(f"Valore del bit 0 di MK0.0: {get_bool(read_mk, 0, 0)}")
+    # Dettagli per il client S7Comm
+    _client: c.Client
+    _ip: str
+    _port: int
+    _rack: int
+    _slot: int
 
-def write_and_read_DB(client, db_number):
-    # Scrittura e lettura dei Data Block
-    print(f"Scrittura e lettura del Data Block {db_number}:")
-    
-    # Scrittura: Setto il bit 0 del primo byte del Data Block a True
-    db_data = (ctypes.c_uint8 * 1)()
-    set_bool(db_data, 0, 0, True)
-    client.write_area(Areas.DB, db_number, 0, db_data)
-    
-    # Lettura: Leggo il primo byte del Data Block
-    read_db = client.read_area(Areas.DB, db_number, 0, 1)
-    print(f"Valore del bit 0 di DB{db_number}.0: {get_bool(read_db, 0, 0)}")
+    def __init__(self, ip:str="127.0.0.1", rack:int=0, slot:int=1, port:int=22000):
 
-def main():
-    # Creazione del client Snap7
-    client = c.Client()
+        # Settaggio parametri per connessione al PLC
+        self._ip = ip
+        self._rack = rack
+        self._slot = slot
+        self._port = port
 
-    # Connessione al server (ad esempio, su localhost e porta 102)
-    client.connect('127.0.0.1', 0, 1, 22000)
-    
-    # Verifica connessione
-    if client.get_connected():
-        print("Connessione stabilita con il PLC simulato.\n")
-    else:
-        print("Errore nella connessione al PLC simulato.")
-        return
+        #Connessione con il PLC
+        self._client = c.Client()
+        self._client.connect(self._ip, self._rack, self._slot, self._port)
 
-    # Scrittura e lettura di tutte le aree registrate
-    #write_and_read_PA(client)
-    write_and_read_PE(client)
-    #write_and_read_MK(client)
-#
-    ## Scrittura e lettura dei Data Blocks
-    #for i in range(10):  # Per ogni DB dal 1 al 8 (come configurato nel server)
-    #    write_and_read_DB(client, i)
+        # Configurazione del logger
+        self._log = loguru.logger
 
-    # Disconnessione dal server
-    client.disconnect()
-    print("\nDisconnessione dal PLC simulato avvenuta con successo.")
+        if self._client.get_connected():
+            self._log.debug("Connessione stabilita con il PLC simulato.\n")
+        else:
+            self._log.debug("Errore nella connessione al PLC simulato.")
+
+    def close_connection(self):
+
+        # Disconnessione dal PLC
+        self._client.disconnect()
+        self._log.warning("PLC disconnesso...")
+
+    def write_bit_PA(self, bit_index:int, value:bool):
+
+        self._log.debug("Scrittura dell'area PA")
+
+        # Scrittura: Setto il bit specificato al valore specificato
+        pa_data = (ctypes.c_uint8 * 8)()
+        pa_data[bit_index] = value
+        self._client.write_area(Areas.PA, 0, 0, pa_data)
+
+        self._log.debug(f"Scritto il bit PA{bit_index} al valore {value}")
+
+    def read_PA(self):
+
+        self._log.debug("Lettura dell'area PA")
+
+        # Lettura: Leggo tutta l'area PA
+        read_pa = self._client.read_area(Areas.PA, 0, 0, 8)
+        self._log.debug(f"Area PA: {list(read_pa)}")
+
+    def write_bit_PE(self, bit_index:int, value:bool):
+
+        self._log.debug("Scrittura dell'area PE")
+
+        # Scrittura: Setto il bit specificato al valore specificato
+        pe_data = (ctypes.c_uint8 * 8)()
+        pe_data[bit_index] = value
+        self._client.write_area(Areas.PE, 0, 0, pe_data)
+
+        self._log.debug(f"Scritto il bit PE{bit_index} al valore {value}")
+
+    def read_PE(self):
+
+        self._log.debug("Lettura dell'area PE")
+
+        # Lettura: Leggo tutta l'area PE
+        read_pe = self._client.read_area(Areas.PE, 0, 0, 8)
+        self._log.debug(f"Area PE: {list(read_pe)}")
+
+    def write_bit_MK(self, bit_index:int, value:bool):
+
+        self._log.debug("Scrittura dell'area MK")
+
+        # Scrittura: Setto il bit specificato al valore specificato
+        mk_data = (ctypes.c_uint8 * 8)()
+        mk_data[bit_index] = value
+        self._client.write_area(Areas.MK, 0, 0, mk_data)
+
+        self._log.debug(f"Scritto il bit MK{bit_index} al valore {value}")
+
+    def read_MK(self):
+
+        self._log.debug("Lettura dell'area MK")
+
+        # Lettura: Leggo tutta l'area MK
+        read_mk = self._client.read_area(Areas.MK, 0, 0, 8)
+        self._log.debug(f"Area MK: {list(read_mk)}")
+
+    def write_bit_DB(self, bit_index:int, value:bool):
+
+        self._log.debug("Scrittura dell'area DB")
+
+        # Scrittura: Setto il bit specificato al valore specificato
+        db_data = (ctypes.c_uint8 * 8)()
+        db_data[bit_index] = value
+        self._client.write_area(Areas.DB, 0, 0, db_data)
+
+        self._log.debug(f"Scritto il bit DB{bit_index} al valore {value}")
+
+    def read_DB(self):
+
+        self._log.debug("Lettura dell'area DB")
+
+        # Lettura: Leggo tutta l'area DB
+        read_db = self._client.read_area(Areas.DB, 0, 0, 8)
+        self._log.debug(f"Area DB: {list(read_db)}")
 
 if __name__ == '__main__':
-    main()
+
+    cli = Client()
+    
+    cli.write_bit_PE(0,True)
+    time.sleep(5)
+    cli.read_PE()
+    cli.read_PA()
+    cli.read_MK()
+
+    cli.close_connection()
 
