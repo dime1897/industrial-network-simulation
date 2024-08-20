@@ -2,7 +2,7 @@ from pyModbusTCP.client import ModbusClient
 import time
 
 # Configura il client
-client = ModbusClient(host="localhost", port=23000, auto_open=True)
+client = ModbusClient(host="localhost", port=10502, auto_open=True) #502 È la porta di Modbus, ho messo la 10502 solo per non dover fare sudo tutte le volte
 
 def read_coils(start_address, quantity):
     """Legge una serie di coils dal server."""

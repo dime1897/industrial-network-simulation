@@ -136,7 +136,7 @@ class Siemens:
         
     def run(self):
 
-        self._server.start(22000)
+        self._server.start(10102) #102 È la porta di S7Comm, ho messo la 10102 solo per non dover fare sudo tutte le volte
         self._log.debug("Server started...")
 
         try:

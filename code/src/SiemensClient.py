@@ -15,7 +15,7 @@ class Client:
     _rack: int
     _slot: int
 
-    def __init__(self, ip:str="127.0.0.1", rack:int=0, slot:int=1, port:int=22000):
+    def __init__(self, ip:str="127.0.0.1", rack:int=0, slot:int=1, port:int=10102): #102 È la porta di S7Comm, ho messo la 10102 solo per non dover fare sudo tutte le volte
 
         # Settaggio parametri per connessione al PLC
         self._ip = ip
@@ -114,9 +114,9 @@ class Client:
         self._log.debug("Lettura dell'area DB")
 
         # Lettura: Leggo tutta l'area DB
-        read_db = self._client.read_area(Areas.DB, 0, 0, 4)
+        read_db = self._client.write_area(Areas.DB, 0, 0, 4)
         self._log.debug(f"Area DB0 (tot_product): {int.from_bytes(read_db, byteorder = 'big', signed = False)}")
-        read_db = self._client.read_area(Areas.DB, 1, 0, 4)
+        read_db = self._client.write_area(Areas.DB, 1, 0, 4)
         self._log.debug(f"Area DB1 (tot_defected): {int.from_bytes(read_db, byteorder = 'big', signed = False)}")
 
 if __name__ == '__main__':

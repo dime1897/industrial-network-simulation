@@ -1,13 +1,13 @@
 from pyModbusTCP.server import ModbusServer
 import loguru
 
-class Beckhoff():
+class Beckhoff:
 
     _server: ModbusServer
 
     _log: None
 
-    def __init__(self, host="localhost", port=23000):
+    def __init__(self, host="localhost", port=10502): #502 È la porta di Modbus, ho messo la 10502 solo per non dover fare sudo tutte le volte
         
         # Configurazione del server
         self._server = ModbusServer(host=host, port=port, no_block=True)
@@ -25,15 +25,17 @@ class Beckhoff():
 
     def run(self):
         
-        try:
-            self._server.start()
-            self._log.debug("Server started...")
+        self._server.start()
+        self._log.debug("Server started...")
 
+        try:
             while True:
-                        # Il server continua a girare finché non viene interrotto
-                        pass
+                """
+                Nella logica di controllo di questo PLC a noi interessa ricevere dal macchnario a valle
+                """
+                pass
         except KeyboardInterrupt:
-            self._log.warning("Server stopped.")
+            self._log.warning("Server stopped...")
         finally:
             self._server.stop()
 
