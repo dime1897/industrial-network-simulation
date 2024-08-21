@@ -178,9 +178,10 @@ class Beckhoff:
                 # Attesa di 1 secondo prima del prossimo ciclo
                 time.sleep(1)
         except KeyboardInterrupt:
-            self._log.warning("Server stopped...")
+            self._log.warning("Server manually blocked...")
         finally:
             self._server.stop()
+            self._log.warning("Destroying server...")
 
 if __name__ == "__main__":
     PLC = Beckhoff()
