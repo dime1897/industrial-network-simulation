@@ -28,8 +28,8 @@ class Beckhoff:
 
         # Settaggio dei failure rate
         self._picking_area_failure_rate = 0.0
-        self._plier_failure_rate = 0.25
-        self._releasing_area_failure_rate = 0.0
+        self._plier_failure_rate = 0.0
+        self._releasing_area_failure_rate = 0.20
 
         # Settaggio dei tassi d'arrivo
         self._product_arrival_rate = 2 # Arrivano due prodotti al secondo sulla linea di prelievo
@@ -63,7 +63,7 @@ class Beckhoff:
     def set_coils(self, start_address:int, values:list) -> None:
         self._server.data_bank.set_coils(start_address, values)
 
-    def get_coils(self, start_address:int, number:int) -> list[bool]:
+    def get_coils(self, start_address:int, number:int) -> list:
         #self._log.debug(f"Called with:\nstart_address={start_address}\nnumber={number}\nReading:{self._server.data_bank.get_coils(start_address, number)}")
         return self._server.data_bank.get_coils(start_address, number)
 

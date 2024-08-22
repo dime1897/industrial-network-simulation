@@ -31,7 +31,7 @@ class Client:
         else:
             self._log.debug("Connected to PLC...")
 
-    def read_full_state(self) -> list[bool]:
+    def read_full_state(self) -> list:
         
         # Leggiamo lo stato del PLC per aggiornare l'HMI
         return self._client.read_coils(0, 20) # Leggiamo i 10 ingressi e le 10 uscite

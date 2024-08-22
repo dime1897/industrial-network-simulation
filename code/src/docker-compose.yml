@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  plcsiemens:
+    build:
+      context: ./deployment
+      dockerfile: Dockerfile.plcsiemens
+    container_name: plcsiemens
+    volumes:
+      - ./deployment:/app
+    working_dir: /app
+    networks:
+      mynet:
+        ipv4_address: 192.168.1.1
+    command: ["python", "PLCsiemens.py"]
+
+  siemensclient:
+    build:
+      context: ./deployment
+      dockerfile: Dockerfile.hmisiemens
+    depends_on:
+      - plcsiemens
+    stdin_open: true
+    tty: true
+    container_name: siemensclient
+    volumes:
+      - ./deployment:/app
+    working_dir: /app
+    networks:
+      mynet:
+        ipv4_address: 192.168.1.2
+    command: ["python", "SiemensClient.py"]
+
+networks:
+  mynet:
+    driver: bridge
+    name: mynet
+    ipam:
+      config:
+        - subnet: 192.168.0.0/16

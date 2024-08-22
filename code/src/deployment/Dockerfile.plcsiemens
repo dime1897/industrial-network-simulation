@@ -1,0 +1,21 @@
+FROM ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update \
+    && ln -s /usr/bin/python3 /usr/bin/python \
+    && apt install -y software-properties-common \
+                        python3-pip \
+                        python3-venv \
+    && add-apt-repository ppa:gijzelaar/snap7 \
+    && apt install -y libsnap7-dev libsnap7-1 \
+    && apt update 
+    
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv /opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY *siemens* .
+COPY AreaTypes.py .
+RUN pip install --no-cache-dir -r siemens-requirements.txt
+
+CMD ["python3", "PLCsiemens.py"]

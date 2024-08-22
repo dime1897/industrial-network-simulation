@@ -1,7 +1,8 @@
+import sys
 import loguru
 import snap7.client as c
-from snap7.util import *
-from snap7.types import *
+import ctypes as ct
+from AreaTypes import Areas
 
 class Client:
 
@@ -15,8 +16,8 @@ class Client:
     _rack: int
     _slot: int
 
-    def __init__(self, ip:str="127.0.0.1", rack:int=0, slot:int=1, port:int=10102) -> None: #102 È la porta di S7Comm, ho messo la 10102 solo per non dover fare sudo tutte le volte
-
+    def __init__(self, ip:str="192.168.1.1", rack:int=0, slot:int=1, port:int=102) -> None: 
+        
         # Settaggio parametri per connessione al PLC
         self._ip = ip
         self._rack = rack
@@ -46,7 +47,7 @@ class Client:
         self._log.debug("Scrittura dell'area PA")
 
         # Scrittura: Setto il bit specificato al valore specificato
-        pa_data = (ctypes.c_uint8 * 8)()
+        pa_data = (ct.c_uint8 * 8)()
         pa_data[bit_index] = value
         self._client.write_area(Areas.PA, 0, 0, pa_data)
 
@@ -65,7 +66,7 @@ class Client:
         self._log.debug("Scrittura dell'area PE")
 
         # Scrittura: Setto il bit specificato al valore specificato
-        pe_data = (ctypes.c_uint8 * 8)()
+        pe_data = (ct.c_uint8 * 8)()
         pe_data[bit_index] = value
         self._client.write_area(Areas.PE, 0, 0, pe_data)
 
@@ -84,7 +85,7 @@ class Client:
         self._log.debug("Scrittura dell'area MK")
 
         # Scrittura: Setto il bit specificato al valore specificato
-        mk_data = (ctypes.c_uint8 * 8)()
+        mk_data = (ct.c_uint8 * 8)()
         mk_data[bit_index] = value
         self._client.write_area(Areas.MK, 0, 0, mk_data)
 
@@ -103,7 +104,7 @@ class Client:
         self._log.debug("Scrittura dell'area DB")
 
         # Scrittura: Setto il bit specificato al valore specificato
-        db_data = (ctypes.c_uint8 * 8)()
+        db_data = (ct.c_uint8 * 8)()
         db_data[bit_index] = value
         self._client.write_area(Areas.DB, 0, 0, db_data)
 
@@ -153,6 +154,9 @@ class Client:
                     break
             except ValueError:
                 print("Inserisci un numero tra quelli proposti!!")
+            except EOFError:
+                print("Input non disponibile.")
+                sys.exit(1)
 
 if __name__ == '__main__':
 

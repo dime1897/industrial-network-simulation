@@ -1,10 +1,10 @@
 import threading
 import loguru
+import time
 import random as rnd
 import snap7 as snp
 import ctypes as ct
 from snap7.types import *
-from snap7.util import *
 
 """
 Definiamo una classe Siemens che sostanzialmente sarà 
@@ -57,17 +57,17 @@ class Siemens:
         self._DB = [None] * self._data_block_number  # Data Block Area (DB)
 
         # Registrazione delle aree di memoria nel nostro server
-        self._server.register_area(srvAreaPA, 0, self._PA)  # Uscite fisiche
-        self._server.register_area(srvAreaPE, 0, self._PE)  # Ingressi fisici
-        self._server.register_area(srvAreaMK, 0, self._MK)  # Merker Memory
+        self._server.register_area(srvAreaPA, 0, self._PA)  # Uscite fisiche srvAreaPA
+        self._server.register_area(srvAreaPE, 0, self._PE)  # Ingressi fisici srvAreaPE
+        self._server.register_area(srvAreaMK, 0, self._MK)  # Merker Memory srvAreaMK
         for i in range(self._data_block_number):
             self._DB[i] = (ct.c_uint8 * 4)() # I Data Block dono da 4 byte l'uno
-            self._server.register_area(srvAreaDB, i, self._DB[i])  # Data Blocks
+            self._server.register_area(srvAreaDB, i, self._DB[i])  # Data Blocks srvAreaDB
         
         # Configurazione del logger
         self._log = loguru.logger
 
-        self._log.debug("Server configuration ended...")
+        self._log.debug(f"Server configuration ended...\n{srvAreaPA} {srvAreaPE} {srvAreaMK} {srvAreaDB}")
 
     def processing_routine(self):
         time.sleep(3) # Per simulare la lavorazione
