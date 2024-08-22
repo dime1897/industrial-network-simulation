@@ -3,7 +3,6 @@ import loguru
 import threading
 import random as rnd
 from pyModbusTCP.server import ModbusServer
-from typing import Union
 
 class Beckhoff:
 
@@ -22,14 +21,14 @@ class Beckhoff:
     # Logger
     _log: None
 
-    def __init__(self, host="localhost", port=10502): #502 È la porta di Modbus, ho messo la 10502 solo per non dover fare sudo tutte le volte
+    def __init__(self, host="localhost", port=10502) -> None: #502 È la porta di Modbus, ho messo la 10502 solo per non dover fare sudo tutte le volte
         
         # Crezione del server
         self._server = ModbusServer(host=host, port=port, no_block=True)
 
         # Settaggio dei failure rate
         self._picking_area_failure_rate = 0.0
-        self._plier_failure_rate = 0.0
+        self._plier_failure_rate = 0.25
         self._releasing_area_failure_rate = 0.0
 
         # Settaggio dei tassi d'arrivo
@@ -47,14 +46,28 @@ class Beckhoff:
 
         self._log.debug("Server configuration ended...")
 
-    def set_coils(self, start_address:int, values:list):
+    def is_in_fault(self) -> bool:
+
+        if self.get_coils(7,1)[0] or self.get_coils(8,1)[0] or self.get_coils(9,1)[0]:
+            # Significa che c'è un fault da qualche parte
+            return True
+        return False
+
+    def ready_to_fill(self) -> bool:
+
+        if self.get_coils(0,6) == [True,True,True,True,True,True] and self.get_coils(6, 1)[0]:
+            # Significa che ci sono tutti i prodotti e la scatola da riempire
+            return True
+        return False
+
+    def set_coils(self, start_address:int, values:list) -> None:
         self._server.data_bank.set_coils(start_address, values)
 
-    def get_coils(self, start_address:int, number:int):
+    def get_coils(self, start_address:int, number:int) -> list[bool]:
         #self._log.debug(f"Called with:\nstart_address={start_address}\nnumber={number}\nReading:{self._server.data_bank.get_coils(start_address, number)}")
         return self._server.data_bank.get_coils(start_address, number)
 
-    def product_arriving(self):
+    def product_arriving(self) -> None:
         
         if rnd.random() < self._picking_area_failure_rate:
             # Un prodotto è caduto mentre arrivava
@@ -73,12 +86,12 @@ class Beckhoff:
             self.set_coils(10, [True]) # Tiriamo su la barriera perché la stazione di prelievo è piena
             self._log.warning("Picking station full...")
 
-    def box_arriving(self):
+    def box_arriving(self) -> None:
 
         self.set_coils(6, [True]) # Triggeriamo la presenza della scatola
         self._log.debug("Box arrived...")
 
-    def filling_process(self):
+    def filling_process(self) -> None:
 
         if rnd.random() < self._plier_failure_rate:
             # La pinza ha riscontrato un problema
@@ -94,20 +107,21 @@ class Beckhoff:
         self._log.debug("Tightening the plier...")
         time.sleep(1)
 
-        self.set_coils(11, [False, True, True]) # Posizioniamo il braccio meccanico sulla stazione di prelievo e lo simuliamo con 1s di sleep
+        self.set_coils(11, [False, True, True]) # Posizioniamo il braccio meccanico sulla stazione di rilascio e lo simuliamo con 1s di sleep
         self._log.debug("Moving above releasing station...")
         self.set_coils(0, [False]*6)
         if self.get_coils(10,1)[0]:
             self.set_coils(10,[False]) # Se la barriera era alta la riabbassiamo
         if rnd.random() < self._plier_failure_rate:
-            # La pinza ha riscontrato un problema
+            # La pinza ha riscontrato un problema11
             self.set_coils(8, [True]) # In questo caso il problema alla pinza è nato durante lo spostamento, quindi si perde la presa
-            self.set_coils(11, [False,False])
+            self.set_coils(12, [False,False])
             return
         time.sleep(1)
 
         self.set_coils(12, [False, True]) # Lasciamo il prodotto all'interno della scatola
         self._log.debug("Releasing product...")
+        time.sleep(1)
         if rnd.random() < self._releasing_area_failure_rate:
             # Problemi nell'area di rilascio
             self.set_coils(13, [False])
@@ -120,7 +134,7 @@ class Beckhoff:
         self._log.debug("Moving back to home station...")
 
 
-    def run(self):
+    def run(self) -> None:
         
         self._server.start()
         self._log.debug("Server started...")
@@ -155,7 +169,7 @@ class Beckhoff:
                         threading.Thread(target=self.box_arriving).start()
                     cnt = 0 # Ricominciamo il conteggio
 
-                if not self.get_coils(7,1)[0] and not self.get_coils(8,1)[0] and not self.get_coils(9,1)[0] and not self.get_coils(10,1)[0]:
+                if not self.is_in_fault() and not self.get_coils(10,1)[0]:
                     # Ogni secondo arrivano due prodotti se non ci sono errori e se non c'è la barriera alta
                     threading.Thread(target=self.product_arriving).start()
                 
@@ -163,7 +177,7 @@ class Beckhoff:
                     # Si è verificato un problema sulla stazione di prelievo
                     self._log.error("OPERATOR NEEDED IN PICKING AREA!!!")
 
-                if self.get_coils(0,6) == [True,True,True,True,True,True] and self.get_coils(6, 1)[0] and self.get_coils(11, 3) == [False, False, False]:
+                if self.ready_to_fill() and self.get_coils(11, 3) == [False, False, False] and not self.is_in_fault():
                     # La stazione di prelievo è piena e possiamo riempire
                     threading.Thread(target=self.filling_process).start()
 

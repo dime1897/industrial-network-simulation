@@ -178,7 +178,7 @@ class Siemens:
                     - MK7 --> flusso di lavoro concluso
                 """
                 if self._PE[0] and not self._MK[0]:
-                    # Il pezzo è stato caricato sul piano di lavoro e la lavorazione non è in corso
+                    # Il pezzo è stato caricato sul piano di lavoro e la lavorazione non è in corso e non ci sono errori
                     self._log.debug("Trigger to actuator to start processing routine...")
                     self._PA[0] = True
                 
