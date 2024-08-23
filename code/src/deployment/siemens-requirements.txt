@@ -1,2 +1,2 @@
 loguru
-python-snap7==2.0.0
+python-snap7==0.5

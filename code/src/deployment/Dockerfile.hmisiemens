@@ -19,5 +19,4 @@ COPY siemens-requirements.txt .
 RUN pip install --no-cache-dir -r siemens-requirements.txt
 
 COPY SiemensClient.py .
-COPY AreaTypes.py .
 CMD ["python3", "SiemensClient.py"]

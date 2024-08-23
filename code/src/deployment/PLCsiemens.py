@@ -56,12 +56,12 @@ class Siemens:
         self._DB = [None] * self._data_block_number  # Data Block Area (DB)
 
         # Registrazione delle aree di memoria nel nostro server
-        self._server.register_area(Areas.PA, 0, self._PA)  # Uscite fisiche srvAreaPA
-        self._server.register_area(Areas.PE, 0, self._PE)  # Ingressi fisici srvAreaPE
-        self._server.register_area(Areas.MK, 0, self._MK)  # Merker Memory srvAreaMK
+        self._server.register_area(1, 0, self._PA)  # Uscite fisiche srvAreaPA
+        self._server.register_area(0, 0, self._PE)  # Ingressi fisici srvAreaPE
+        self._server.register_area(2, 0, self._MK)  # Merker Memory srvAreaMK
         for i in range(self._data_block_number):
             self._DB[i] = (ct.c_uint8 * 4)() # I Data Block dono da 4 byte l'uno
-            self._server.register_area(Areas.DB, i, self._DB[i])  # Data Blocks srvAreaDB
+            self._server.register_area(5, i, self._DB[i])  # Data Blocks srvAreaDB
         
         # Configurazione del logger
         self._log = loguru.logger
