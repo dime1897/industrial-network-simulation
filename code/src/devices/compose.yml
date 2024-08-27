@@ -4,7 +4,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.19.0.0/16
+        - subnet: ${NET_ID:-172.19.0.0/16}
 
 services:
 
@@ -12,10 +12,18 @@ services:
     build:
       context: ./PLCsiemens
       dockerfile: Dockerfile
-    container_name: plcsiemens
+    environment:
+      PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
+      PROCESSING_FAILURE_RATE: ${PROCESSING_FAILURE_RATE:-0.15}
+      QUALITY_ASSURANCE_FAILURE_RATE: ${QUALITY_ASSURANCE_FAILURE_RATE:-0.18}
+      DISCARDING_OR_SENDING_FAILURE_RATE: ${DISCARDING_OR_SENDING_FAILURE_RATE:-0.11}
+      DEFECT_RATE: ${DEFECT_RATE:-0.24}
+      MEMORY_AREA_SIZE: ${MEMORY_AREA_SIZE:-8}
+      DATA_BLOCK_NUMBER: ${DATA_BLOCK_NUMBER:-5}
+    container_name: ${PLCSIEMENS_CONTAINER_NAME:-plcsiemens}
     networks:
       testnet:
-        ipv4_address: 172.19.1.1
+        ipv4_address: ${PLCSIEMENS_ADDRESS:-172.19.1.1}
     command: ["python3", "PLCsiemens.py"]
 
   siemensclient:
@@ -25,9 +33,14 @@ services:
     stdin_open: true
     tty: true
     depends_on:
-      - plcsiemens
-    container_name: siemensclient
+      - ${PLCSIEMENS_CONTAINER_NAME:-plcsiemens}
+    environment:
+      PLCSIEMENS_ADDRESS: ${PLCSIEMENS_ADDRESS:-172.19.1.1}
+      PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
+      PLCSIEMENS_RACK: ${PLCSIEMENS_RACK:-0}
+      PLCSIEMENS_SLOT: ${PLCSIEMENS_SLOT:-1}
+    container_name: ${HMISIEMENS_CONTAINER_NAME:-hmisiemens}
     networks:
       testnet:
-        ipv4_address: 172.19.1.2
+        ipv4_address: ${HMISIEMENS_ADDRESS:-172.19.1.2}
     command: ["python3", "SiemensClient.py"]

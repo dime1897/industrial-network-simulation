@@ -7,6 +7,8 @@ RUN apt update \
                         python3-venv \
     && add-apt-repository ppa:gijzelaar/snap7 \
     && apt install -y libsnap7-dev libsnap7-1 \
+    && apt install -y net-tools \
+    && apt-get install -y iputils-ping \
     && apt update 
 
 RUN mkdir /app
@@ -14,5 +16,3 @@ WORKDIR /app
 
 COPY . .
 RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
-
-CMD ["python3", "PLCsiemens.py"]
