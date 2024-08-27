@@ -1,0 +1,33 @@
+networks:
+  testnet:
+    name: testnet
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
+
+services:
+
+  plcsiemens:
+    build:
+      context: ./PLCsiemens
+      dockerfile: Dockerfile
+    container_name: plcsiemens
+    networks:
+      testnet:
+        ipv4_address: 172.19.1.1
+    command: ["python3", "PLCsiemens.py"]
+
+  siemensclient:
+    build:
+      context: ./SiemensClient
+      dockerfile: Dockerfile
+    stdin_open: true
+    tty: true
+    depends_on:
+      - plcsiemens
+    container_name: siemensclient
+    networks:
+      testnet:
+        ipv4_address: 172.19.1.2
+    command: ["python3", "SiemensClient.py"]
