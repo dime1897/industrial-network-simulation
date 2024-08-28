@@ -1,2 +1,0 @@
-loguru
-python-snap7==0.5
