@@ -1,0 +1,27 @@
+services:
+    ziti-ctrl:
+        image: openziti/ziti-cli
+        container_name: ziti-ctrl
+        command: >
+            edge quickstart
+            --home /home/ziggy/quickstart
+            --ctrl-address ziti-controller
+            --ctrl-port 1280
+            --router-address ziti-router
+            --router-port 3022
+            --password ziggy123
+        # user: "${UID:-1000}:${GID:-1000}"
+        volumes:
+            - ziti-data:/home/ziggy
+        networks:
+            testnet:
+                aliases:
+                    - ziti-controller
+                    - ziti-router
+        expose:
+            - 1280
+            - 3022
+
+volumes:
+    ziti-data:
+        name: ziti-data

@@ -8,10 +8,25 @@ networks:
     name: testnet
     external: true
 
+x-base-service: &base-service
+    image: openziti/ziti-edge-tunnel
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - .:/ziti-edge-tunnel
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
+    environment:
+      - ZITI_IDENTITY_BASENAME
+      - ZITI_ENROLL_TOKEN
+    #networks:
+    #  testnet:
+    network_mode: host
+    privileged: true
+
 services:
   chown-controller:
     image: busybox
-    name: chown-controller
+    container_name: chown-controller
     command: chown -R ${ZIGGY_UID:-2171} /ziti-controller
     volumes:
       - ziti-controller:/ziti-controller
@@ -20,7 +35,7 @@ services:
 
   ziti-controller:
     image: ${ZITI_CONTROLLER_IMAGE:-openziti/ziti-controller}
-    name: ziti-controller
+    container_name: ziti-controller
     depends_on:
       chown-controller:
         condition: service_completed_successfully
@@ -59,3 +74,10 @@ services:
       timeout: 3s
       retries: 5
       start_period: 15s
+
+  ziti-server-tunneler-test:
+    <<: *base-service
+    entrypoint: ["sh", "-c", "while true; do sleep infinity; done"]
+
+  
+

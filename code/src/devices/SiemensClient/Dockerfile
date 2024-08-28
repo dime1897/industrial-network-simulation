@@ -4,7 +4,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update \
     && apt install -y software-properties-common \
                         python3-pip \
-                        python3-venv \
     && add-apt-repository ppa:gijzelaar/snap7 \
     && apt install -y libsnap7-dev libsnap7-1 \
     && apt install -y net-tools \
