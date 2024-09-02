@@ -6,9 +6,14 @@ RUN apt update \
                         python3-pip \
     && add-apt-repository ppa:gijzelaar/snap7 \
     && apt install -y libsnap7-dev libsnap7-1 \
-    && apt install -y net-tools \
-    && apt-get install -y iputils-ping \
-    && apt update 
+    && apt-get install -y \
+    net-tools \
+    iputils-ping \
+    tcpdump \
+    iptables \
+    iproute2 \
+    dnsutils \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /app
 WORKDIR /app
