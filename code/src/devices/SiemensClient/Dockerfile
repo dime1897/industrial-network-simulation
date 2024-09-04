@@ -13,6 +13,7 @@ RUN apt update \
     iptables \
     iproute2 \
     dnsutils \
+    netcat-traditional \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
     
 RUN mkdir /app  
