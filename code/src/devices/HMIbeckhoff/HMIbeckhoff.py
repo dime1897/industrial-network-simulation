@@ -21,6 +21,7 @@ class Client:
 
         # Connessione con il PLC
         self._client = ModbusClient(host=self._host, port=self._port, auto_open=True)
+        # self._client.open()
         
         if not self._client.is_open:
             self._log.error("Impossible connecting to PLC")

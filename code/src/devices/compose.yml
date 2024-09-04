@@ -9,7 +9,7 @@ networks:
 services:
   plcsiemens:
     profiles:
-      - host
+      - host-siemens
     build:
       context: ./PLCsiemens
       dockerfile: Dockerfile
@@ -29,7 +29,7 @@ services:
 
   plcbeckhoff:
     profiles:
-      - beckhoff
+      - host-beckhoff
     build:
       context: ./PLCbeckhoff
       dockerfile: Dockerfile
@@ -53,7 +53,7 @@ services:
       
   hmisiemens:
     profiles:
-      - client
+      - client-siemens
     build:
       context: ./HMIsiemens
       dockerfile: Dockerfile
@@ -76,21 +76,21 @@ services:
 
   hmibeckhoff:
     profiles:
-      - beckhoff
+      - client-beckhoff
     build:
       context: ./HMIbeckhoff
       dockerfile: Dockerfile
     stdin_open: true
     tty: true
     depends_on:
-      - plcbeckhoff
+      ziti-hmibeckhoff-router:
+        condition: service_healthy
     environment:
-      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.19.2.1}
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-10.21.22.23}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
-      PLCBECKHOFF_RACK: ${PLCBECKHOFF_RACK:-0}
-      PLCBECKHOFF_SLOT: ${PLCBECKHOFF_SLOT:-1}
     container_name: ${HMIBECKHOFF_CONTAINER_NAME:-hmibeckhoff}
-    networks:
-     testnet:
-       ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.19.2.2}
+    # networks:
+    #  testnet:
+      #  ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.19.2.2}
+    network_mode: service:ziti-hmibeckhoff-router
     command: ["python3", "HMIbeckhoff.py"]
