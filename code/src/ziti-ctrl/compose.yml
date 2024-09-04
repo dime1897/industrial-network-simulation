@@ -44,23 +44,23 @@ services:
         image: busybox
         command: echo "INFO Ziti is cooking"
 
-    ziti-host:
+    ziti-plcsiemens-tunneler:
         profiles:
             - host
         image: openziti/ziti-host
-        container_name: ziti-host
+        container_name: ziti-plcsiemens-tunneler
         networks:
             testnet:
         volumes:
-            - ziti-host:/ziti-edge-tunnel
+            - ziti-plcsiemens-tunneler:/ziti-edge-tunnel
         environment:
             - ZITI_ENROLL_TOKEN
 
-    ziti-client:
+    ziti-hmisiemens-router:
         profiles:
             - client
         image: openziti/ziti-router:1.1.9
-        container_name: ziti-client
+        container_name: ziti-hmisiemens-router
         expose:
             - 3022
         networks:
@@ -71,7 +71,7 @@ services:
             ZITI_ENROLL_TOKEN:
             ZITI_ROUTER_MODE: tproxy
         volumes:
-            - ziti-client:/ziti-router
+            - ziti-hmisiemens-router:/ziti-router
         dns:
             - 127.0.0.1
             - 1.1.1.1
@@ -97,5 +97,8 @@ services:
 
 volumes:
     ziti-ctrl:
-    ziti-host:
-    ziti-client:
+        name: ziti-ctrl
+    ziti-plcsiemens-tunneler:
+        name: ziti-plcsiemens-tunneler
+    ziti-hmisiemens-router:
+        name: ziti-hmisiemens-router

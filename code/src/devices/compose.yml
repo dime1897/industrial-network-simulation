@@ -27,16 +27,40 @@ services:
         ipv4_address: ${PLCSIEMENS_ADDRESS:-172.19.1.1}
     command: ["python3", "PLCsiemens.py"]
 
+  plcbeckhoff:
+    profiles:
+      - beckhoff
+    build:
+      context: ./PLCbeckhoff
+      dockerfile: Dockerfile
+    container_name: ${PLCBECKHOFF_CONTAINER_NAME:-plcbeckhoff}
+    environment:
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.19.2.1}
+      PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
+      PICKING_FAILURE_RATE: ${PICKING_FAILURE_RATE:-0.082}
+      PLIER_FAILURE_RATE: ${PLIER_FAILURE_RATE:-0.091}
+      RELEASING_FAILURE_RATE: ${RELEASING_FAILURE_RATE:-0.066}
+      PRODUCT_ARRIVAL_RATE: ${PRODUCT_ARRIVAL_RATE:-2}
+      BOX_ARRIVAL_RATE: ${BOX_ARRIVAL_RATE:-0.33333}
+      PHYSICAL_INPUT_NUMBER: ${PHYSICAL_INPUT_NUMBER:-10}
+      PHYSICAL_OUTPUT_NUMBER: ${PHYSICAL_OUTPUT_NUMBER:-10}
+      MERKER_REGISTER_NUMBER: ${MERKER_REGISTER_NUMBER:-10}
+      HOLDING_REGISTER_NUMBER: ${HOLDING_REGISTER_NUMBER:-4}
+    networks:
+      testnet:
+        ipv4_address: ${PLCBECKHOFF_ADDRESS:-172.19.2.1}
+    command: ["python3", "PLCbeckhoff.py"]
+      
   hmisiemens:
     profiles:
       - client
     build:
-      context: ./SiemensClient
+      context: ./HMIsiemens
       dockerfile: Dockerfile
     stdin_open: true
     tty: true
     depends_on:
-      ziti-client:
+      ziti-hmisiemens-router:
         condition: service_healthy
     environment:
       PLCSIEMENS_ADDRESS: ${PLCSIEMENS_ADDRESS:-10.11.12.13}
@@ -47,5 +71,26 @@ services:
     # networks:
     #  testnet:
       #  ipv4_address: ${HMISIEMENS_ADDRESS:-172.19.1.2}
-    network_mode: service:ziti-client
-    command: ["python3", "SiemensClient.py"]
+    network_mode: service:ziti-hmisiemens-router
+    command: ["python3", "HMIsiemens.py"]
+
+  hmibeckhoff:
+    profiles:
+      - beckhoff
+    build:
+      context: ./HMIbeckhoff
+      dockerfile: Dockerfile
+    stdin_open: true
+    tty: true
+    depends_on:
+      - plcbeckhoff
+    environment:
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.19.2.1}
+      PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
+      PLCBECKHOFF_RACK: ${PLCBECKHOFF_RACK:-0}
+      PLCBECKHOFF_SLOT: ${PLCBECKHOFF_SLOT:-1}
+    container_name: ${HMIBECKHOFF_CONTAINER_NAME:-hmibeckhoff}
+    networks:
+     testnet:
+       ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.19.2.2}
+    command: ["python3", "HMIbeckhoff.py"]
