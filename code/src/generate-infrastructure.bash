@@ -35,6 +35,22 @@ ziti edge create service-policy "plc-siemens-service-policy" Bind --service-role
 
 ziti edge create service-policy "hmi-siemens-service-policy" Dial --service-roles '#plc-siemens-service-attr' --identity-roles '#hmi-siemens-attr'
 
+ziti edge create edge-router "hmi-beckhoff-router" --tunneler-enabled -o /tmp/hmi-beckhoff-router.erott.jwt
+
+ziti edge update identity hmi-beckhoff-router --role-attributes hmi-beckhoff-attr
+
+ziti edge create identity "plc-beckhoff-tunneler" -o /tmp/plc-beckhoff-tunneler.ott.jwt --role-attributes plc-beckhoff-attr
+
+ziti edge create config "hmi-beckhoff-config" intercept.v1 '{"protocols":["tcp"],"addresses":["10.21.22.23"], "portRanges":[{"low":502, "high":502}]}'
+
+ziti edge create config "plc-beckhoff-config" host.v1 '{"protocol":"tcp", "address":"plcbeckhoff","port":502}'
+
+ziti edge create service "plc-beckhoff-service" --configs hmi-beckhoff-config,plc-beckhoff-config --role-attributes plc-beckhoff-service-attr
+
+ziti edge create service-policy "plc-beckhoff-service-policy" Bind --service-roles '#plc-beckhoff-service-attr' --identity-roles '#plc-beckhoff-attr'
+
+ziti edge create service-policy "hmi-beckhoff-service-policy" Dial --service-roles '#plc-beckhoff-service-attr' --identity-roles '#hmi-beckhoff-attr'
+
 ziti edge list service-policies
 
 ziti edge list service-edge-router-policies
@@ -51,7 +67,15 @@ docker compose --profile=host-siemens up --detach
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-siemens-router.erott.jwt)" \
 docker compose --profile=client-siemens up --detach
 
-# timeout 10s docker compose logs hmisiemens --no-log-prefix --follow || true
+ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/plc-beckhoff-tunneler.ott.jwt)" \
+docker compose --profile=host-beckhoff up --detach
+
+ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-beckhoff-router.erott.jwt)" \
+docker compose --profile=client-beckhoff up --detach
+
+timeout 5s docker compose logs hmisiemens --no-log-prefix --follow || true
+
+timeout 5s docker compose logs hmibeckhoff --no-log-prefix --follow || true
 
 # read -p "Done! Press ENTER to destroy..."
 

@@ -1,0 +1,15 @@
+import time
+from fins import FinsClient
+
+client = FinsClient(host="192.168.172.151", port=9600)
+client.connect()
+
+dato = 634
+client.memory_area_write('D1850', dato.to_bytes(8, 'big'), 1)
+
+for i in range(100):
+    addr = 'D' + str(1800+i)
+    response = client.memory_area_read(addr, 1)
+    print(int.from_bytes(response.data, 'big'))
+
+client.close()
