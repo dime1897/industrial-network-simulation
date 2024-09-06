@@ -94,3 +94,18 @@ services:
       #  ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.19.2.2}
     network_mode: service:ziti-hmibeckhoff-router
     command: ["python3", "HMIbeckhoff.py"]
+
+  hmiomron:
+    profiles:
+      - client-omron
+    build:
+      context: ./HMIomron
+      dockerfile: Dockerfile
+    environment:
+      PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-172.19.3.1}
+      PLCOMRON-PORT: ${PLCOMRON_PORT:-9600}
+    container_name: ${HMIOMRON_CONTAINER_NAME:-hmiomron}
+    networks:
+      testnet:
+        ipv4_address: ${HMIOMRON_ADDRESS:-172.19.3.2}
+    command: ["python3", "HMIomron.py"]
