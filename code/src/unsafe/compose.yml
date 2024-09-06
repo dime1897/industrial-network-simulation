@@ -4,7 +4,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: ${NET_ID:-172.20.0.0/16}
+        - subnet: ${NET_ID:-172.15.0.0/16}
 
 services:
   plcsiemens:
@@ -14,9 +14,6 @@ services:
     container_name: ${PLCSIEMENS_CONTAINER_NAME:-local-plcsiemens}
     healthcheck:
       test: ["CMD", "/usr/bin/true"]
-      interval: 5s
-      timeout: 30s
-      retries: 5
       start_period: 5s
     environment:
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
@@ -28,7 +25,7 @@ services:
       DATA_BLOCK_NUMBER: ${DATA_BLOCK_NUMBER:-5}
     networks:
       local-testnet:
-        ipv4_address: ${PLCSIEMENS_ADDRESS:-172.20.1.1}
+        ipv4_address: ${PLCSIEMENS_ADDRESS:-172.15.1.1}
     command: ["python3", "PLCsiemens.py"]
 
   plcbeckhoff:
@@ -38,12 +35,9 @@ services:
     container_name: ${PLCBECKHOFF_CONTAINER_NAME:-local-plcbeckhoff}
     healthcheck:
       test: ["CMD", "/usr/bin/true"]
-      interval: 5s
-      timeout: 30s
-      retries: 5
       start_period: 5s
     environment:
-      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.15.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
       PICKING_FAILURE_RATE: ${PICKING_FAILURE_RATE:-0}
       PLIER_FAILURE_RATE: ${PLIER_FAILURE_RATE:-0}
@@ -56,7 +50,7 @@ services:
       HOLDING_REGISTER_NUMBER: ${HOLDING_REGISTER_NUMBER:-4}
     networks:
       local-testnet:
-        ipv4_address: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
+        ipv4_address: ${PLCBECKHOFF_ADDRESS:-172.15.2.1}
     command: ["python3", "PLCbeckhoff.py"]
       
   hmisiemens:
@@ -69,14 +63,14 @@ services:
       plcsiemens:
         condition: service_healthy
     environment:
-      PLCSIEMENS_ADDRESS: ${PLCSIEMENS_ADDRESS:-172.20.1.1}
+      PLCSIEMENS_ADDRESS: ${PLCSIEMENS_ADDRESS:-172.15.1.1}
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
       PLCSIEMENS_RACK: ${PLCSIEMENS_RACK:-0}
       PLCSIEMENS_SLOT: ${PLCSIEMENS_SLOT:-1}
     container_name: ${HMISIEMENS_CONTAINER_NAME:-local-hmisiemens}
     networks:
      local-testnet:
-       ipv4_address: ${HMISIEMENS_ADDRESS:-172.20.1.2}
+       ipv4_address: ${HMISIEMENS_ADDRESS:-172.15.1.2}
     command: ["python3", "HMIsiemens.py"]
 
   hmibeckhoff:
@@ -89,12 +83,12 @@ services:
       plcbeckhoff:
         condition: service_healthy
     environment:
-      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.15.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
     container_name: ${HMIBECKHOFF_CONTAINER_NAME:-local-hmibeckhoff}
     networks:
      local-testnet:
-       ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.20.2.2}
+       ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.15.2.2}
     command: ["python3", "HMIbeckhoff.py"]
 
   hmiomron:
@@ -107,5 +101,5 @@ services:
     container_name: ${HMIOMRON_CONTAINER_NAME:-local-hmiomron}
     networks:
       local-testnet:
-        ipv4_address: ${HMIOMRON_ADDRESS:-172.20.3.2}
+        ipv4_address: ${HMIOMRON_ADDRESS:-172.15.3.2}
     command: ["python3", "HMIomron.py"]
