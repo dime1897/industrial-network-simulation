@@ -51,6 +51,22 @@ ziti edge create service-policy "plc-beckhoff-service-policy" Bind --service-rol
 
 ziti edge create service-policy "hmi-beckhoff-service-policy" Dial --service-roles '#plc-beckhoff-service-attr' --identity-roles '#hmi-beckhoff-attr'
 
+ziti edge create edge-router "hmi-omron-router" --tunneler-enabled -o /tmp/hmi-omron-router.erott.jwt
+
+ziti edge update identity hmi-omron-router --role-attributes hmi-omron-attr
+
+ziti edge create identity "plc-omron-tunneler" -o /tmp/plc-omron-tunneler.ott.jwt --role-attributes plc-omron-attr
+
+ziti edge create config "hmi-omron-config" intercept.v1 '{"protocols":["tcp", "udp"],"addresses":["10.31.32.33"], "portRanges":[{"low":9600, "high":9600}]}'
+
+ziti edge create config "plc-omron-config" host.v1 '{"protocol":"udp", "address":"192.168.3.1","port":9600}'
+
+ziti edge create service "plc-omron-service" --configs hmi-omron-config,plc-omron-config --role-attributes plc-omron-service-attr
+
+ziti edge create service-policy "plc-omron-service-policy" Bind --service-roles '#plc-omron-service-attr' --identity-roles '#plc-omron-attr'
+
+ziti edge create service-policy "hmi-omron-service-policy" Dial --service-roles '#plc-omron-service-attr' --identity-roles '#hmi-omron-attr'
+
 ziti edge list service-policies
 
 ziti edge list service-edge-router-policies
@@ -73,9 +89,17 @@ docker compose --profile=host-beckhoff up --detach
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-beckhoff-router.erott.jwt)" \
 docker compose --profile=client-beckhoff up --detach
 
+ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/plc-omron-tunneler.ott.jwt)" \
+docker compose --profile=host-omron up --detach
+
+ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-omron-router.erott.jwt)" \
+docker compose --profile=client-omron up --detach
+
 timeout 5s docker compose logs hmisiemens --no-log-prefix --follow || true
 
 timeout 5s docker compose logs hmibeckhoff --no-log-prefix --follow || true
+
+timeout 5s docker compose logs hmiomron --no-log-prefix --follow || true
 
 # read -p "Done! Press ENTER to destroy..."
 

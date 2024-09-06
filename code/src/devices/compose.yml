@@ -37,9 +37,9 @@ services:
     environment:
       PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.19.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
-      PICKING_FAILURE_RATE: ${PICKING_FAILURE_RATE:-0.082}
-      PLIER_FAILURE_RATE: ${PLIER_FAILURE_RATE:-0.091}
-      RELEASING_FAILURE_RATE: ${RELEASING_FAILURE_RATE:-0.066}
+      PICKING_FAILURE_RATE: ${PICKING_FAILURE_RATE:-0}
+      PLIER_FAILURE_RATE: ${PLIER_FAILURE_RATE:-0}
+      RELEASING_FAILURE_RATE: ${RELEASING_FAILURE_RATE:-0}
       PRODUCT_ARRIVAL_RATE: ${PRODUCT_ARRIVAL_RATE:-2}
       BOX_ARRIVAL_RATE: ${BOX_ARRIVAL_RATE:-0.33333}
       PHYSICAL_INPUT_NUMBER: ${PHYSICAL_INPUT_NUMBER:-10}
@@ -101,11 +101,15 @@ services:
     build:
       context: ./HMIomron
       dockerfile: Dockerfile
+    depends_on:
+      ziti-hmiomron-router:
+        condition: service_healthy
     environment:
-      PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-172.19.3.1}
+      PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-10.31.32.33}
       PLCOMRON-PORT: ${PLCOMRON_PORT:-9600}
     container_name: ${HMIOMRON_CONTAINER_NAME:-hmiomron}
-    networks:
-      testnet:
-        ipv4_address: ${HMIOMRON_ADDRESS:-172.19.3.2}
+    # networks:
+      # testnet:
+        # ipv4_address: ${HMIOMRON_ADDRESS:-172.19.3.2}
+    network_mode: service:ziti-hmiomron-router
     command: ["python3", "HMIomron.py"]

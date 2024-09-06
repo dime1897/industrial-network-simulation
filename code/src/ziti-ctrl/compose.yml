@@ -68,6 +68,18 @@ services:
         environment:
             - ZITI_ENROLL_TOKEN
 
+    ziti-plcomron-tunneler:
+        profiles:
+            - host-omron
+        image: openziti/ziti-host
+        container_name: ziti-plcomron-tunneler
+        networks:
+            testnet:
+        volumes:
+            - ziti-plcomron-tunneler:/ziti-edge-tunnel
+        environment:
+            - ZITI_ENROLL_TOKEN
+
     ziti-hmisiemens-router:
         profiles:
             - client-siemens
@@ -134,6 +146,39 @@ services:
             retries: 5
             start_period: 30s
 
+    ziti-hmiomron-router:
+        profiles:
+            - client-omron
+        image: openziti/ziti-router:1.1.9
+        container_name: ziti-hmiomron-router
+        expose:
+            - 3022
+        networks:
+            testnet:
+                ipv4_address: ${HMI_OMRON_ADDRESS:-172.19.3.2}
+        environment:
+            ZITI_CTRL_ADVERTISED_ADDRESS: ziti-controller
+            ZITI_ENROLL_TOKEN:
+            ZITI_ROUTER_MODE: tproxy
+        volumes:
+            - ziti-hmiomron-router:/ziti-router
+        dns:
+            - 127.0.0.1
+            - 1.1.1.1
+        user: root
+        cap_add:
+            - NET_ADMIN
+        healthcheck:
+            test:
+                - CMD
+                - ziti
+                - agent
+                - stats
+            interval: 3s
+            timeout: 3s
+            retries: 5
+            start_period: 30s
+
     # attacker:
         # image: ubuntu:latest
         # networks:
@@ -147,7 +192,11 @@ volumes:
         name: ziti-plcsiemens-tunneler
     ziti-plcbeckhoff-tunneler:
         name: ziti-plcbeckhoff-tunneler
+    ziti-plcomron-tunneler:
+        name: ziti-plcomron-tunneler
     ziti-hmisiemens-router:
         name: ziti-hmisiemens-router
     ziti-hmibeckhoff-router:
         name: ziti-hmibeckhoff-router
+    ziti-hmiomron-router:
+        name: ziti-hmiomron-router

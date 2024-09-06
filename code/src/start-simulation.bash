@@ -11,3 +11,7 @@ docker compose --profile=client-siemens up --detach
 docker compose --profile=host-beckhoff up --detach
 
 docker compose --profile=client-beckhoff up --detach
+
+docker compose --profile=host-omron up --detach
+
+docker compose --profile=client-omron up --detach

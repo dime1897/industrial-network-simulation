@@ -10,4 +10,8 @@ docker compose --profile=client-beckhoff stop
 
 docker compose --profile=host-beckhoff stop
 
+docker compose --profile=client-omron stop
+
+docker compose --profile=host-omron stop
+
 docker compose stop ziti-ctrl
