@@ -1,19 +1,23 @@
 networks:
-  testnet:
-    name: testnet
+  local-testnet:
+    name: local-testnet
     driver: bridge
     ipam:
       config:
-        - subnet: ${NET_ID:-172.19.0.0/16}
+        - subnet: ${NET_ID:-172.20.0.0/16}
 
 services:
   plcsiemens:
-    profiles:
-      - host-siemens
     build:
       context: ./PLCsiemens
       dockerfile: Dockerfile
-    container_name: ${PLCSIEMENS_CONTAINER_NAME:-plcsiemens}
+    container_name: ${PLCSIEMENS_CONTAINER_NAME:-local-plcsiemens}
+    healthcheck:
+      test: ["CMD", "/usr/bin/true"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 5s
     environment:
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
       PROCESSING_FAILURE_RATE: ${PROCESSING_FAILURE_RATE:-0.15}
@@ -23,19 +27,23 @@ services:
       MEMORY_AREA_SIZE: ${MEMORY_AREA_SIZE:-8}
       DATA_BLOCK_NUMBER: ${DATA_BLOCK_NUMBER:-5}
     networks:
-      testnet:
-        ipv4_address: ${PLCSIEMENS_ADDRESS:-172.19.1.1}
+      local-testnet:
+        ipv4_address: ${PLCSIEMENS_ADDRESS:-172.20.1.1}
     command: ["python3", "PLCsiemens.py"]
 
   plcbeckhoff:
-    profiles:
-      - host-beckhoff
     build:
       context: ./PLCbeckhoff
       dockerfile: Dockerfile
-    container_name: ${PLCBECKHOFF_CONTAINER_NAME:-plcbeckhoff}
+    container_name: ${PLCBECKHOFF_CONTAINER_NAME:-local-plcbeckhoff}
+    healthcheck:
+      test: ["CMD", "/usr/bin/true"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 5s
     environment:
-      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.19.2.1}
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
       PICKING_FAILURE_RATE: ${PICKING_FAILURE_RATE:-0}
       PLIER_FAILURE_RATE: ${PLIER_FAILURE_RATE:-0}
@@ -47,69 +55,57 @@ services:
       MERKER_REGISTER_NUMBER: ${MERKER_REGISTER_NUMBER:-10}
       HOLDING_REGISTER_NUMBER: ${HOLDING_REGISTER_NUMBER:-4}
     networks:
-      testnet:
-        ipv4_address: ${PLCBECKHOFF_ADDRESS:-172.19.2.1}
+      local-testnet:
+        ipv4_address: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
     command: ["python3", "PLCbeckhoff.py"]
       
   hmisiemens:
-    profiles:
-      - client-siemens
     build:
       context: ./HMIsiemens
       dockerfile: Dockerfile
     stdin_open: true
     tty: true
     depends_on:
-      ziti-hmisiemens-router:
+      plcsiemens:
         condition: service_healthy
     environment:
-      PLCSIEMENS_ADDRESS: ${PLCSIEMENS_ADDRESS:-10.11.12.13}
+      PLCSIEMENS_ADDRESS: ${PLCSIEMENS_ADDRESS:-172.20.1.1}
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
       PLCSIEMENS_RACK: ${PLCSIEMENS_RACK:-0}
       PLCSIEMENS_SLOT: ${PLCSIEMENS_SLOT:-1}
-    container_name: ${HMISIEMENS_CONTAINER_NAME:-hmisiemens}
-    # networks:
-    #  testnet:
-      #  ipv4_address: ${HMISIEMENS_ADDRESS:-172.19.1.2}
-    network_mode: service:ziti-hmisiemens-router
+    container_name: ${HMISIEMENS_CONTAINER_NAME:-local-hmisiemens}
+    networks:
+     local-testnet:
+       ipv4_address: ${HMISIEMENS_ADDRESS:-172.20.1.2}
     command: ["python3", "HMIsiemens.py"]
 
   hmibeckhoff:
-    profiles:
-      - client-beckhoff
     build:
       context: ./HMIbeckhoff
       dockerfile: Dockerfile
     stdin_open: true
     tty: true
     depends_on:
-      ziti-hmibeckhoff-router:
+      plcbeckhoff:
         condition: service_healthy
     environment:
-      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-10.21.22.23}
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
-    container_name: ${HMIBECKHOFF_CONTAINER_NAME:-hmibeckhoff}
-    # networks:
-    #  testnet:
-      #  ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.19.2.2}
-    network_mode: service:ziti-hmibeckhoff-router
+    container_name: ${HMIBECKHOFF_CONTAINER_NAME:-local-hmibeckhoff}
+    networks:
+     local-testnet:
+       ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.20.2.2}
     command: ["python3", "HMIbeckhoff.py"]
 
   hmiomron:
-    profiles:
-      - client-omron
     build:
       context: ./HMIomron
       dockerfile: Dockerfile
-    depends_on:
-      ziti-hmiomron-router:
-        condition: service_healthy
     environment:
-      PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-10.31.32.33}
+      PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-192.168.3.1}
       PLCOMRON_PORT: ${PLCOMRON_PORT:-9600}
-    container_name: ${HMIOMRON_CONTAINER_NAME:-hmiomron}
-    # networks:
-      # testnet:
-        # ipv4_address: ${HMIOMRON_ADDRESS:-172.19.3.2}
-    network_mode: service:ziti-hmiomron-router
+    container_name: ${HMIOMRON_CONTAINER_NAME:-local-hmiomron}
+    networks:
+      local-testnet:
+        ipv4_address: ${HMIOMRON_ADDRESS:-172.20.3.2}
     command: ["python3", "HMIomron.py"]

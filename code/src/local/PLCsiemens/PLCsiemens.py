@@ -1,10 +1,10 @@
 import threading
 import loguru
 import time
+import os
 import random as rnd
 import snap7 as snp
 import ctypes as ct
-from snap7.types import *
 
 """
 Definiamo una classe Siemens che sostanzialmente sarà 
@@ -19,33 +19,25 @@ class Siemens:
 
     # Dettagli del PLC
     _server: snp.server.Server
-    _memory_area_size: int
-    _data_block_number: int
+    _memory_area_size: int = int(os.getenv("MEMORY_AREA_SIZE"))
+    _data_block_number: int = int(os.getenv("DATA_BLOCK_NUMBER"))
     _PA: ct.Array
     _PE: ct.Array
     _MK: ct.Array
     _DB: list
+    _port: int = int(os.getenv("PLCSIEMENS_PORT"))
 
     # Failure rate
-    _processing_failure_rate: float
-    _quality_assurance_failure_rate: float
-    _defect_rate: float
-    _discarding_or_sending_failure_rate: float
+    _processing_failure_rate: float = float(os.getenv("PROCESSING_FAILURE_RATE"))
+    _quality_assurance_failure_rate: float = float(os.getenv("QUALITY_ASSURANCE_FAILURE_RATE"))
+    _defect_rate: float = float(os.getenv("DEFECT_RATE"))
+    _discarding_or_sending_failure_rate: float = float(os.getenv("DISCARDING_OR_SENDING_FAILURE_RATE"))
 
     # Variabili per il monitoraggio della produzione
-    _tot_production: int
-    _tot_defected: int
+    _tot_production: int = 0
+    _tot_defected: int = 0
 
     def __init__(self):
-
-        # Settaggio della dimensione (in byte) delle aree di memoria
-        self._memory_area_size, self._data_block_number = 8, 5
-
-        # Settaggio dei failure rate
-        self._processing_failure_rate, self._quality_assurance_failure_rate, self._defect_rate, self._discarding_or_sending_failure_rate = 0.20, 0.35, 0.5, 0.45
-
-        # Azzeramento dei contatori
-        self._tot_production, self._tot_defected = 0, 0
 
         # Creazione del server
         self._server = snp.server.Server()
@@ -57,17 +49,17 @@ class Siemens:
         self._DB = [None] * self._data_block_number  # Data Block Area (DB)
 
         # Registrazione delle aree di memoria nel nostro server
-        self._server.register_area(srvAreaPA, 0, self._PA)  # Uscite fisiche srvAreaPA
-        self._server.register_area(srvAreaPE, 0, self._PE)  # Ingressi fisici srvAreaPE
-        self._server.register_area(srvAreaMK, 0, self._MK)  # Merker Memory srvAreaMK
+        self._server.register_area(1, 0, self._PA)  # Uscite fisiche srvAreaPA
+        self._server.register_area(0, 0, self._PE)  # Ingressi fisici srvAreaPE
+        self._server.register_area(2, 0, self._MK)  # Merker Memory srvAreaMK
         for i in range(self._data_block_number):
             self._DB[i] = (ct.c_uint8 * 4)() # I Data Block dono da 4 byte l'uno
-            self._server.register_area(srvAreaDB, i, self._DB[i])  # Data Blocks srvAreaDB
+            self._server.register_area(5, i, self._DB[i])  # Data Blocks srvAreaDB
         
         # Configurazione del logger
         self._log = loguru.logger
 
-        self._log.debug(f"Server configuration ended...\n{srvAreaPA} {srvAreaPE} {srvAreaMK} {srvAreaDB}")
+        self._log.debug(f"Server configuration ended...")
 
     def processing_routine(self):
         time.sleep(3) # Per simulare la lavorazione
@@ -136,7 +128,7 @@ class Siemens:
         
     def run(self):
 
-        self._server.start(10102) #102 È la porta di S7Comm, ho messo la 10102 solo per non dover fare sudo tutte le volte
+        self._server.start(self._port)
         self._log.debug("Server started...")
 
         try:

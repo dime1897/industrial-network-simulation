@@ -11,20 +11,17 @@ class Client:
 
     # Dettagli per il client Modbus
     _client: ModbusClient
-    _host: str
-    _port: int
+    _host: str = os.getenv("PLCBECKHOFF_ADDRESS")
+    _port: int = int(os.getenv("PLCBECKHOFF_PORT"))
 
-    def __init__(self, host:str="localhost", port:int=502) -> None:
-
-        # Settaggio parametri per la connessione con il PLC
-        self._host = host
-        self._port = port
+    def __init__(self) -> None:
 
         # Configurazione del logger
         self._log = loguru.logger
 
         # Connessione con il PLC
         self._client = ModbusClient(host=self._host, port=self._port, auto_open=True)
+        # self._client.open()
         
         if not self._client.is_open:
             self._log.error("Impossible connecting to PLC")
@@ -86,5 +83,5 @@ class Client:
 
 
 if __name__ == "__main__":
-    cli = Client(port=10502)
+    cli = Client()
     cli.HMI()

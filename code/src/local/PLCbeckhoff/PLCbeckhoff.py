@@ -1,3 +1,4 @@
+import os
 import time
 import loguru
 import threading
@@ -8,38 +9,35 @@ class Beckhoff:
 
     # Dettagli del PLC
     _server: ModbusServer
+    _host: str = os.getenv("PLCBECKHOFF_ADDRESS")
+    _port: int = int(os.getenv("PLCBECKHOFF_PORT"))
+    _physical_input_number: int = int(os.getenv("PHYSICAL_INPUT_NUMBER"))
+    _physical_output_number: int = int(os.getenv("PHYSICAL_OUTPUT_NUMBER"))
+    _merker_register_number: int = int(os.getenv("MERKER_REGISTER_NUMBER"))
+    _holding_register_number: int = int(os.getenv("HOLDING_REGISTER_NUMBER"))
 
     # Failure rate
-    _picking_area_failure_rate: float
-    _releasing_area_failure_rate: float
-    _plier_failure_rate: float
+    _picking_area_failure_rate: float = float(os.getenv("PICKING_FAILURE_RATE"))
+    _releasing_area_failure_rate: float = float(os.getenv("RELEASING_FAILURE_RATE"))
+    _plier_failure_rate: float = float(os.getenv("PLIER_FAILURE_RATE"))
 
     # Arrival rate
-    _product_arrival_rate: int
-    _box_arrival_rate: int
+    _product_arrival_rate: int = int(os.getenv("PRODUCT_ARRIVAL_RATE"))
+    _box_arrival_rate: float = float(os.getenv("BOX_ARRIVAL_RATE"))
 
     # Logger
     _log: None
 
-    def __init__(self, host="localhost", port=10502) -> None: #502 È la porta di Modbus, ho messo la 10502 solo per non dover fare sudo tutte le volte
+    def __init__(self) -> None:
         
         # Crezione del server
-        self._server = ModbusServer(host=host, port=port, no_block=True)
-
-        # Settaggio dei failure rate
-        self._picking_area_failure_rate = 0.0
-        self._plier_failure_rate = 0.0
-        self._releasing_area_failure_rate = 0.20
-
-        # Settaggio dei tassi d'arrivo
-        self._product_arrival_rate = 2 # Arrivano due prodotti al secondo sulla linea di prelievo
-        self._box_arrival_rate = 0.33333 # Arriva una scatola ogni tre secondi circa (sincronizzato con l'arrivo dei prodotti)
+        self._server = ModbusServer(host=self._host, port=self._port, no_block=True)
 
         # Configurazione delle aree di memoria
-        self._server.data_bank.set_coils(0, [False]*20) # 10 ingressi fisici; offset 0
-        self._server.data_bank.set_coils(10, [False]*10) # 10 uscite fisiche; offset 10
-        self._server.data_bank.set_holding_registers(20, [0]*10) # 10 registri di holding Merker; offset 20
-        self._server.data_bank.set_holding_registers(30, [100, 200, 300, 400]) # 4 registri di holding per i DB; offset 30 
+        self._server.data_bank.set_coils(0, [False]*self._physical_input_number) # 10 ingressi fisici; offset 0
+        self._server.data_bank.set_coils(10, [False]*self._physical_output_number) # 10 uscite fisiche; offset 10
+        self._server.data_bank.set_holding_registers(20, [0]*self._merker_register_number) # 10 registri di holding Merker; offset 20
+        self._server.data_bank.set_holding_registers(30, [500]*self._holding_register_number) # 4 registri di holding per i DB; offset 30 
 
         # Configurazione del logger
         self._log = loguru.logger
@@ -113,7 +111,7 @@ class Beckhoff:
         if self.get_coils(10,1)[0]:
             self.set_coils(10,[False]) # Se la barriera era alta la riabbassiamo
         if rnd.random() < self._plier_failure_rate:
-            # La pinza ha riscontrato un problema11
+            # La pinza ha riscontrato un problema
             self.set_coils(8, [True]) # In questo caso il problema alla pinza è nato durante lo spostamento, quindi si perde la presa
             self.set_coils(12, [False,False])
             return
@@ -177,7 +175,7 @@ class Beckhoff:
                     # Si è verificato un problema sulla stazione di prelievo
                     self._log.error("OPERATOR NEEDED IN PICKING AREA!!!")
 
-                if self.ready_to_fill() and self.get_coils(11, 3) == [False, False, False] and not self.is_in_fault():
+                if not self.is_in_fault() and self.ready_to_fill() and self.get_coils(11, 3) == [False, False, False]:
                     # La stazione di prelievo è piena e possiamo riempire
                     threading.Thread(target=self.filling_process).start()
 

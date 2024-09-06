@@ -15,3 +15,9 @@ docker compose --profile=client-beckhoff up --detach
 docker compose --profile=host-omron up --detach
 
 docker compose --profile=client-omron up --detach
+
+timeout 5s docker compose logs hmisiemens --no-log-prefix --follow || true
+
+timeout 5s docker compose logs hmibeckhoff --no-log-prefix --follow || true
+
+timeout 5s docker compose logs hmiomron --no-log-prefix --follow || true

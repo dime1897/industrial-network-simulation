@@ -7,6 +7,8 @@ docker compose exec -it ziti-ctrl bash
 
 ziti edge login https://ziti-controller:1280 --ca=/home/ziggy/quickstart/pki/root-ca/certs/root-ca.cert -u admin -p ziggy123
 
+
+
 ziti edge create edge-router "hmi-siemens-router" --tunneler-enabled -o /tmp/hmi-siemens-router.erott.jwt
 
 ziti edge update identity hmi-siemens-router --role-attributes hmi-siemens-attr
