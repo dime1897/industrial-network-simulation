@@ -10,10 +10,10 @@ RUN apt-get update -y \
     iptables \
     iproute2 \
     dnsutils \
-    netcat-traditional
+    netcat-traditional \
+    && mkdir /app
 
-RUN mkdir /app
 WORKDIR /app
 
 COPY . .
-RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
+RUN chmod u+x iptables-rules.sh && pip3 install --break-system-packages --no-cache-dir -r requirements.txt

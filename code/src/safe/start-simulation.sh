@@ -6,9 +6,21 @@ docker compose --profile=ziti up --detach
 
 docker compose --profile=host-siemens up --detach
 
+docker compose exec --privileged --no-TTY plcsiemens bash << BASH
+
+./iptables-rules.sh
+
+BASH
+
 docker compose --profile=client-siemens up --detach
 
 docker compose --profile=host-beckhoff up --detach
+
+docker compose exec --privileged --no-TTY plcbeckhoff bash << BASH
+
+./iptables-rules.sh
+
+BASH
 
 docker compose --profile=client-beckhoff up --detach
 

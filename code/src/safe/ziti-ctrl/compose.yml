@@ -51,6 +51,7 @@ services:
         container_name: ziti-plcsiemens-tunneler
         networks:
             testnet:
+                ipv4_address: ${ZITI_PLCSIEMENS_TUNNELER_ADDRESS:-172.19.0.3}
         volumes:
             - ziti-plcsiemens-tunneler:/ziti-edge-tunnel
         environment:
@@ -63,6 +64,7 @@ services:
         container_name: ziti-plcbeckhoff-tunneler
         networks:
             testnet:
+                ipv4_address: ${ZITI_PLCBECKHOFF_TUNNELER_ADDRESS:-172.19.0.4}
         volumes:
             - ziti-plcbeckhoff-tunneler:/ziti-edge-tunnel
         environment:
@@ -179,11 +181,11 @@ services:
             retries: 5
             start_period: 30s
 
-    # attacker:
-        # image: ubuntu:latest
-        # networks:
-            # testnet:
-        # profiles: ["no-auto-start"] 
+    attacker:
+        image: ubuntu:latest
+        networks:
+            testnet:
+        profiles: ["no-auto-start"] 
 
 volumes:
     ziti-ctrl:

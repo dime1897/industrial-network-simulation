@@ -80,11 +80,23 @@ BASH
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/plc-siemens-tunneler.ott.jwt)" \
 docker compose --profile=host-siemens up --detach
 
+docker compose exec --privileged --no-TTY plcsiemens bash << BASH
+
+./iptables-rules.sh
+
+BASH
+
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-siemens-router.erott.jwt)" \
 docker compose --profile=client-siemens up --detach
 
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/plc-beckhoff-tunneler.ott.jwt)" \
 docker compose --profile=host-beckhoff up --detach
+
+docker compose exec --privileged --no-TTY plcbeckhoff bash << BASH
+
+./iptables-rules.sh
+
+BASH
 
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-beckhoff-router.erott.jwt)" \
 docker compose --profile=client-beckhoff up --detach

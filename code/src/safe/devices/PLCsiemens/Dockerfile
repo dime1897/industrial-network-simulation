@@ -14,10 +14,10 @@ RUN apt update \
     iproute2 \
     dnsutils \
     netcat-traditional \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && mkdir /app
 
-RUN mkdir /app
 WORKDIR /app
 
 COPY . .
-RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
+RUN chmod u+x iptables-rules.sh && pip3 install --break-system-packages --no-cache-dir -r requirements.txt
