@@ -94,15 +94,15 @@ services:
        ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.20.2.2}
     command: ["python3", "HMIbeckhoff.py"]
  
-  # hmiomron:
-    # build:
-      # context: ./HMIomron
-      # dockerfile: Dockerfile
-    # environment:
-      # PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-192.168.3.1}
-      # PLCOMRON_PORT: ${PLCOMRON_PORT:-9600}
-    # container_name: ${HMIOMRON_CONTAINER_NAME:-local-hmiomron}
-    # networks:
-      # local-testnet:
-        # ipv4_address: ${HMIOMRON_ADDRESS:-172.20.3.2}
-    # command: ["python3", "HMIomron.py"]
+  attacker:
+    build:
+      context: ./Attacker
+      dockerfile: Dockerfile
+    environment:
+      PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-192.168.3.1}
+      PLCOMRON_PORT: ${PLCOMRON_PORT:-9600}
+    container_name: ${ATTACKER_CONTAINER_NAME:-local-attacker}
+    networks:
+      local-testnet:
+    profiles: ["no-auto-start"] 
+    command: ["python3", "Attacker.py"]
