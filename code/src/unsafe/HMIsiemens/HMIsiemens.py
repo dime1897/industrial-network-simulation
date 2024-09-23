@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import loguru
 from snap7.snap7types import * # type: ignore
 import snap7.client as c
@@ -116,42 +117,45 @@ class Client:
         self._log.debug(f"Area DB1 (tot_defected): {int.from_bytes(read_db, byteorder = 'big', signed = False)}")
 
     def HMI(self) -> None:
+        clear = lambda: os.system("clear")
         while True:
             try:
-                op = int(input("Cosa desideri fare?\n\n" + 
-                               "1-Ricomincia il flusso\n" + 
-                               "2-Gestisci errore in lavorazione\n" + 
-                               "3-Gestisci errore in controllo qualità\n" + 
-                               "4-Gestisci errore in scarico/scarto\n" + 
-                               "5-Leggi aree di memoria\n" + 
-                               "6-Stop\n\n"))
-                if not op in [1,2,3,4,5,6]:
-                    print("Operazione non valida.")
-                elif op == 1:
+                # op = int(input("Cosa desideri fare?\n\n" + 
+                            #    "1-Ricomincia il flusso\n" + 
+                            #    "2-Gestisci errore in lavorazione\n" + 
+                            #    "3-Gestisci errore in controllo qualità\n" + 
+                            #    "4-Gestisci errore in scarico/scarto\n" + 
+                            #    "5-Leggi aree di memoria\n" + 
+                            #    "6-Stop\n\n"))
+                # if not op in [1,2,3,4,5,6]:
+                    # print("Operazione non valida.")
+                # elif op == 1:
                     # Avvio della logica di controllo
-                    cli.write_bit_PE(0,True)
-                elif op == 2:
+                    # cli.write_bit_PE(0,True)
+                # elif op == 2:
                     #Gestione dell'errore (PROC)
-                    cli.write_bit_MK(1,True)
-                elif op == 3:
+                    # cli.write_bit_MK(1,True)
+                # elif op == 3:
                     #Gestione dell'errore (QA)
-                    cli.write_bit_MK(3,True)
-                elif op == 4:
+                    # cli.write_bit_MK(3,True)
+                # elif op == 4:
                     #Gestione dell'errore (SCA)
-                    cli.write_bit_MK(6,True)
-                elif op == 5:
-                    cli.read_PE()
-                    cli.read_PA()
-                    cli.read_MK()
-                    cli.read_DB()
-                else:
-                    cli.close_connection()
-                    break
-            except ValueError:
-                print("Inserisci un numero tra quelli proposti!!")
-            except EOFError:
-                print("Input non disponibile.")
-                sys.exit(1)
+                    # cli.write_bit_MK(6,True)
+                # elif op == 5:
+                # cli.read_PE()
+                # cli.read_PA()
+                # cli.read_MK()
+                clear()
+                cli.read_DB()
+                time.sleep(0.35)
+            # except ValueError:
+                # print("Inserisci un numero tra quelli proposti!!")
+            # except EOFError:
+                # print("Input non disponibile.")
+                # sys.exit(1)
+            except KeyboardInterrupt:
+                cli.close_connection()
+                break
 
 if __name__ == '__main__':
 
