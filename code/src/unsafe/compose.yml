@@ -12,9 +12,6 @@ services:
       context: ./PLCsiemens
       dockerfile: Dockerfile
     container_name: ${PLCSIEMENS_CONTAINER_NAME:-local-plcsiemens}
-    healthcheck:
-      test: ["CMD", "/usr/bin/true"]
-      start_period: 3s
     environment:
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
       PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-192.168.3.1}
@@ -36,9 +33,6 @@ services:
       context: ./PLCbeckhoff
       dockerfile: Dockerfile
     container_name: ${PLCBECKHOFF_CONTAINER_NAME:-local-plcbeckhoff}
-    healthcheck:
-      test: ["CMD", "/usr/bin/true"]
-      start_period: 5s
     environment:
       PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
@@ -62,9 +56,6 @@ services:
       dockerfile: Dockerfile
     stdin_open: true
     tty: true
-    depends_on:
-      plcsiemens:
-        condition: service_healthy
     environment:
       PLCSIEMENS_ADDRESS: ${PLCSIEMENS_ADDRESS:-172.20.1.1}
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
@@ -82,9 +73,6 @@ services:
       dockerfile: Dockerfile
     stdin_open: true
     tty: true
-    depends_on:
-      plcbeckhoff:
-        condition: service_healthy
     environment:
       PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}

@@ -1,8 +1,9 @@
+import os
 import time
 import random as rnd
 from fins.client import FinsClient
 
-client = FinsClient(host = "192.168.3.1", port = 9600)
+client = FinsClient(host = os.getenv("PLCOMRON_ADDRESS"), port = int(os.getenv("PLCOMRON_PORT")))
 client.connect()
 
 BIT_UP = int(1).to_bytes(1, "big")
