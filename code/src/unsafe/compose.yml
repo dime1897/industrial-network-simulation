@@ -8,6 +8,8 @@ networks:
 
 services:
   plcsiemens:
+    profiles:
+      - plc
     build:
       context: ./PLCsiemens
       dockerfile: Dockerfile
@@ -29,6 +31,8 @@ services:
     command: ["python3", "PLCsiemens.py"]
 
   plcbeckhoff:
+    profiles:
+      - plc
     build:
       context: ./PLCbeckhoff
       dockerfile: Dockerfile
@@ -51,10 +55,11 @@ services:
     command: ["python3", "PLCbeckhoff.py"]
       
   hmisiemens:
+    profiles:
+      - hmi
     build:
       context: ./HMIsiemens
       dockerfile: Dockerfile
-    stdin_open: true
     tty: true
     environment:
       PLCSIEMENS_ADDRESS: ${PLCSIEMENS_ADDRESS:-172.20.1.1}
@@ -68,6 +73,8 @@ services:
     command: ["python3", "HMIsiemens.py"]
 
   hmibeckhoff:
+    profiles:
+      - hmi
     build:
       context: ./HMIbeckhoff
       dockerfile: Dockerfile

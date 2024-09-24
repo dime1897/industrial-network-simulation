@@ -151,9 +151,9 @@ class Siemens:
         self._PE[0] = True
         try:
             while True:
-                event = self._server.pick_event() # Serve solo per loggare gli eventi, non è necessario al funzionamento del server
-                if event:
-                    self._log.info(f"Event found: {self._server.event_text(event)}")
+                # event = self._server.pick_event() # Serve solo per loggare gli eventi, non è necessario al funzionamento del server
+                # if event:
+                    # self._log.info(f"Event found: {self._server.event_text(event)}")
                 
                 # Implementazione della logica di controllo
                 """
@@ -213,7 +213,8 @@ class Siemens:
                 if self._PA[2] and self._PE[2] and self._MK[1]:
                     # L'utente comunica di aver ripristinato la situazione d'errore sul piano di lavorazione
                     self._log.debug("Problem resolved by the operator...")
-                    self._PA[2], self._PE[2], self._MK[1] = False, False, False
+                    self._PA[2], self._PE[2], self._MK[1], self._PE[0] = False, False, False, True
+                    time.sleep(1)
                 
                 if self._PE[1] and not self._MK[2]:
                     # La lavorazione è andata a buon fine e si può avviare il processo di controllo qualità
@@ -232,7 +233,8 @@ class Siemens:
                 if self._PA[5] and self._PE[5] and self._MK[3]:
                     # L'utente comunica di aver ripristinato la situazione d'errore nell'area di controllo qualità
                     self._log.debug("Problem resolved by the operator...")
-                    self._PA[5], self._PE[5], self._MK[3] = False, False, False
+                    self._PA[5], self._PE[5], self._MK[3], self._PE[0] = False, False, False, True
+                    time.sleep(1)
 
                 if self._PE[4] and not self._MK[5]:
                     # Il pezzo è da scartare
@@ -267,7 +269,8 @@ class Siemens:
                 if self._PE[6] and self._PA[6] and self._MK[6]:
                     # L'utente comunica di aver ripristinato la situazione d'errore nell'area di scarico/scarto
                     self._log.debug("Problem resolved by the operator...")
-                    self._PA[6], self._PE[6], self._MK[6] = False, False, False
+                    self._PA[6], self._PE[6], self._MK[6], self._PE[0] = False, False, False, True
+                    time.sleep(1)
 
                 if self._MK[7]:
                     # Ciclo ultimato correttamente
