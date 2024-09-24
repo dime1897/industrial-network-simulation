@@ -1,3 +1,5 @@
+name: safe
+
 networks:
   testnet:
     name: testnet

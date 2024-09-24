@@ -1,6 +1,8 @@
+name: unsafe
+
 networks:
   local-testnet:
-    name: local-testnet
+    name: unsafe-testnet
     driver: bridge
     ipam:
       config:
@@ -13,7 +15,7 @@ services:
     build:
       context: ./PLCsiemens
       dockerfile: Dockerfile
-    container_name: ${PLCSIEMENS_CONTAINER_NAME:-local-plcsiemens}
+    container_name: ${PLCSIEMENS_CONTAINER_NAME:-unsafe-plcsiemens}
     environment:
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
       PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-192.168.3.1}
@@ -21,7 +23,7 @@ services:
       PROCESSING_FAILURE_RATE: ${PROCESSING_FAILURE_RATE:-0.15}
       QUALITY_ASSURANCE_FAILURE_RATE: ${QUALITY_ASSURANCE_FAILURE_RATE:-0.18}
       DISCARDING_OR_SENDING_FAILURE_RATE: ${DISCARDING_OR_SENDING_FAILURE_RATE:-0.11}
-      DEFECT_RATE: ${DEFECT_RATE:-0.24}
+      DEFECT_RATE: ${DEFECT_RATE:-0.45}
       MEMORY_AREA_SIZE: ${MEMORY_AREA_SIZE:-8}
       DATA_BLOCK_NUMBER: ${DATA_BLOCK_NUMBER:-5}
       SLEEP_TIME: ${SLEEP_TIME:-0.95}
@@ -36,7 +38,7 @@ services:
     build:
       context: ./PLCbeckhoff
       dockerfile: Dockerfile
-    container_name: ${PLCBECKHOFF_CONTAINER_NAME:-local-plcbeckhoff}
+    container_name: ${PLCBECKHOFF_CONTAINER_NAME:-unsafe-plcbeckhoff}
     environment:
       PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
@@ -66,7 +68,7 @@ services:
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
       PLCSIEMENS_RACK: ${PLCSIEMENS_RACK:-0}
       PLCSIEMENS_SLOT: ${PLCSIEMENS_SLOT:-1}
-    container_name: ${HMISIEMENS_CONTAINER_NAME:-local-hmisiemens}
+    container_name: ${HMISIEMENS_CONTAINER_NAME:-unsafe-hmisiemens}
     networks:
      local-testnet:
        ipv4_address: ${HMISIEMENS_ADDRESS:-172.20.1.2}
@@ -83,7 +85,7 @@ services:
     environment:
       PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
-    container_name: ${HMIBECKHOFF_CONTAINER_NAME:-local-hmibeckhoff}
+    container_name: ${HMIBECKHOFF_CONTAINER_NAME:-unsafe-hmibeckhoff}
     networks:
      local-testnet:
        ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.20.2.2}
@@ -91,12 +93,12 @@ services:
  
   attacker:
     build:
-      context: ./Attacker
+      context: ../Attacker
       dockerfile: Dockerfile
     environment:
       PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-192.168.3.1}
       PLCOMRON_PORT: ${PLCOMRON_PORT:-9600}
-    container_name: ${ATTACKER_CONTAINER_NAME:-local-attacker}
+    container_name: ${ATTACKER_CONTAINER_NAME:-attacker}
     networks:
       local-testnet:
     profiles: ["no-auto-start"] 
