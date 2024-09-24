@@ -15,8 +15,8 @@ RUN apt update \
     dnsutils \
     netcat-traditional \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && mkdir /app
-
+    && mkdir app
+    
 WORKDIR /app
 
 COPY . .

@@ -14,9 +14,9 @@ RUN apt update \
     iproute2 \
     dnsutils \
     netcat-traditional \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && mkdir /app
 
-RUN mkdir /app
 WORKDIR /app
 
 COPY . .

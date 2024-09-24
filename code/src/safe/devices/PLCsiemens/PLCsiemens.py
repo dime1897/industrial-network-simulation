@@ -5,6 +5,7 @@ import os
 import random as rnd
 import snap7 as snp
 import ctypes as ct
+from fins.client import FinsClient
 
 """
 Definiamo una classe Siemens che sostanzialmente sarà 
@@ -26,6 +27,7 @@ class Siemens:
     _MK: ct.Array
     _DB: list
     _port: int = int(os.getenv("PLCSIEMENS_PORT"))
+    _sleep_time: float = float(os.getenv("SLEEP_TIME"))
 
     # Failure rate
     _processing_failure_rate: float = float(os.getenv("PROCESSING_FAILURE_RATE"))
@@ -36,6 +38,12 @@ class Siemens:
     # Variabili per il monitoraggio della produzione
     _tot_production: int = 0
     _tot_defected: int = 0
+
+    # Client PLC Omron
+    _client_omron: FinsClient
+    _plcomron_address: str = os.getenv("PLCOMRON_ADDRESS")
+    _plcomron_port: int = int(os.getenv("PLCOMRON_PORT"))
+    _bit_up: bytearray = int(1).to_bytes(1, 'big')
 
     def __init__(self):
 
@@ -59,10 +67,18 @@ class Siemens:
         # Configurazione del logger
         self._log = loguru.logger
 
+        # Connessione al PLC Omron
+        try:
+            self._client_omron = FinsClient(host = self._plcomron_address, port = self._plcomron_port)
+            self._client_omron.connect()
+        except:
+            self._log.warning("Impossible to connect to Omron PLC.")
+            pass
+
         self._log.debug(f"Server configuration ended...")
 
     def processing_routine(self):
-        time.sleep(3) # Per simulare la lavorazione
+        time.sleep(self._sleep_time) # Per simulare la lavorazione
 
         # Aggiorniamo gli ingressi fisici
         self._PE[0], self._MK[0] = False, False
@@ -76,7 +92,7 @@ class Siemens:
 
     def quality_assurance_routine(self):
         
-        time.sleep(3) # Per simulare il controllo qualità
+        time.sleep(self._sleep_time) # Per simulare il controllo qualità
         
         # Aggiorniamo gli ingressi fisici
         self._PE[1], self._MK[2] = False, False
@@ -91,7 +107,7 @@ class Siemens:
         self._log.debug("Quality assurance process ended...")
 
     def discard_or_send_product(self, arg:list):
-        time.sleep(3) # Per simulare che il pezzo viene scartato
+        time.sleep(self._sleep_time) # Per simulare che il pezzo viene scartato
 
         if "discard" in arg:    
             # Aggiorniamo gli ingressi fisici
@@ -107,7 +123,9 @@ class Siemens:
                 self._PE[6] = True
             else:
                 self._MK[7] = True
+            self._client_omron.memory_area_write("W0.1", self._bit_up, 1)
             self._log.debug("Product discarded...")
+            self._PE[0] = True
 
         elif "send" in arg:
             # Aggiorniamo gli ingressi fisici
@@ -124,18 +142,22 @@ class Siemens:
                 self._PE[6] = True
             else:
                 self._MK[7] = True
+            self._client_omron.memory_area_write("W0.0", self._bit_up, 1)
             self._log.debug("Product properly sent...")
-        
+            self._PE[0] = True
+
     def run(self):
 
         self._server.start(self._port)
         self._log.debug("Server started...")
 
+        #Avvio il primo ciclo
+        self._PE[0] = True
         try:
             while True:
-                event = self._server.pick_event() # Serve solo per loggare gli eventi, non è necessario al funzionamento del server
-                if event:
-                    self._log.info(f"Event found: {self._server.event_text(event)}")
+                # event = self._server.pick_event() # Serve solo per loggare gli eventi, non è necessario al funzionamento del server
+                # if event:
+                    # self._log.info(f"Event found: {self._server.event_text(event)}")
                 
                 # Implementazione della logica di controllo
                 """
@@ -195,7 +217,8 @@ class Siemens:
                 if self._PA[2] and self._PE[2] and self._MK[1]:
                     # L'utente comunica di aver ripristinato la situazione d'errore sul piano di lavorazione
                     self._log.debug("Problem resolved by the operator...")
-                    self._PA[2], self._PE[2], self._MK[1] = False, False, False
+                    self._PA[2], self._PE[2], self._MK[1], self._PE[0] = False, False, False, True
+                    time.sleep(1)
                 
                 if self._PE[1] and not self._MK[2]:
                     # La lavorazione è andata a buon fine e si può avviare il processo di controllo qualità
@@ -214,7 +237,8 @@ class Siemens:
                 if self._PA[5] and self._PE[5] and self._MK[3]:
                     # L'utente comunica di aver ripristinato la situazione d'errore nell'area di controllo qualità
                     self._log.debug("Problem resolved by the operator...")
-                    self._PA[5], self._PE[5], self._MK[3] = False, False, False
+                    self._PA[5], self._PE[5], self._MK[3], self._PE[0] = False, False, False, True
+                    time.sleep(1)
 
                 if self._PE[4] and not self._MK[5]:
                     # Il pezzo è da scartare
@@ -249,7 +273,8 @@ class Siemens:
                 if self._PE[6] and self._PA[6] and self._MK[6]:
                     # L'utente comunica di aver ripristinato la situazione d'errore nell'area di scarico/scarto
                     self._log.debug("Problem resolved by the operator...")
-                    self._PA[6], self._PE[6], self._MK[6] = False, False, False
+                    self._PA[6], self._PE[6], self._MK[6], self._PE[0] = False, False, False, True
+                    time.sleep(1)
 
                 if self._MK[7]:
                     # Ciclo ultimato correttamente
@@ -257,7 +282,7 @@ class Siemens:
                     self._MK[7] = False
 
                 # Attesa di 1 secondo prima del prossimo ciclo
-                time.sleep(1)
+                time.sleep(0.5)
         except KeyboardInterrupt:
             self._log.warning("Server manually blocked...")
         finally:

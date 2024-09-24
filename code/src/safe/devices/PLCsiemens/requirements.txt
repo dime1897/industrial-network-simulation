@@ -1,2 +1,4 @@
 loguru
 python-snap7==0.5
+fins
+fins-driver

@@ -10,9 +10,9 @@ RUN apt-get update -y \
     iptables \
     iproute2 \
     dnsutils \
-    netcat-traditional
+    netcat-traditional \
+    && mkdir /app
 
-RUN mkdir /app
 WORKDIR /app
 
 COPY . .
