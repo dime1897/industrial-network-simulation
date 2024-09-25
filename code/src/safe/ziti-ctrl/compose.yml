@@ -44,18 +44,39 @@ services:
         image: busybox
         command: echo "INFO Ziti is cooking"
 
-    ziti-plcsiemens-tunneler:
+    ziti-plcsiemens-sidecar:
         profiles:
             - host-siemens
-        image: openziti/ziti-host
-        container_name: ziti-plcsiemens-tunneler
+        image: openziti/ziti-router:1.1.9
+        container_name: ziti-plcsiemens-sidecar
+        expose:
+            - 3022
         networks:
             testnet:
-                ipv4_address: ${ZITI_PLCSIEMENS_TUNNELER_ADDRESS:-172.19.0.3}
-        volumes:
-            - ziti-plcsiemens-tunneler:/ziti-edge-tunnel
+                ipv4_address: ${PLCSIEMENS_ADDRESS:-172.19.1.1}
         environment:
-            - ZITI_ENROLL_TOKEN
+            ZITI_CTRL_ADVERTISED_ADDRESS: ziti-controller
+            ZITI_ENROLL_TOKEN:
+            ZITI_ROUTER_MODE: tproxy
+            ZITI_BOOTSTRAP_CONFIG_ARGS: --private
+        volumes:
+            - ziti-plcsiemens-sidecar:/ziti-router
+        dns:
+            - 127.0.0.1
+            - 1.1.1.1
+        user: root
+        cap_add:
+            - NET_ADMIN
+        healthcheck:
+            test:
+                - CMD
+                - ziti
+                - agent
+                - stats
+            interval: 3s
+            timeout: 3s
+            retries: 5
+            start_period: 30s
 
     ziti-plcbeckhoff-tunneler:
         profiles:
@@ -96,6 +117,7 @@ services:
             ZITI_CTRL_ADVERTISED_ADDRESS: ziti-controller
             ZITI_ENROLL_TOKEN:
             ZITI_ROUTER_MODE: tproxy
+            ZITI_BOOTSTRAP_CONFIG_ARGS: --private
         volumes:
             - ziti-hmisiemens-router:/ziti-router
         dns:
@@ -161,3 +183,5 @@ volumes:
         name: ziti-hmisiemens-router
     ziti-hmibeckhoff-router:
         name: ziti-hmibeckhoff-router
+    ziti-plcsiemens-sidecar:
+        name: ziti-plcsiemens-sidecar

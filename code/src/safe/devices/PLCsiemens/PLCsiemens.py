@@ -68,12 +68,12 @@ class Siemens:
         self._log = loguru.logger
 
         # Connessione al PLC Omron
-        try:
-            self._client_omron = FinsClient(host = self._plcomron_address, port = self._plcomron_port)
-            self._client_omron.connect()
-        except:
-            self._log.warning("Impossible to connect to Omron PLC.")
-            pass
+        # try:
+            # self._client_omron = FinsClient(host = self._plcomron_address, port = self._plcomron_port)
+            # self._client_omron.connect()
+        # except:
+            # self._log.warning("Impossible to connect to Omron PLC.")
+            # pass
 
         self._log.debug(f"Server configuration ended...")
 
@@ -123,7 +123,7 @@ class Siemens:
                 self._PE[6] = True
             else:
                 self._MK[7] = True
-            self._client_omron.memory_area_write("W0.1", self._bit_up, 1)
+            # self._client_omron.memory_area_write("W0.1", self._bit_up, 1)
             self._log.debug("Product discarded...")
             self._PE[0] = True
 
@@ -142,7 +142,7 @@ class Siemens:
                 self._PE[6] = True
             else:
                 self._MK[7] = True
-            self._client_omron.memory_area_write("W0.0", self._bit_up, 1)
+            # self._client_omron.memory_area_write("W0.0", self._bit_up, 1)
             self._log.debug("Product properly sent...")
             self._PE[0] = True
 

@@ -13,17 +13,19 @@ ziti edge login https://ziti-controller:1280 --ca=/home/ziggy/quickstart/pki/roo
 
 ziti edge create edge-router "hmi-siemens-router" --tunneler-enabled -o /tmp/hmi-siemens-router.erott.jwt
 
+ziti edge create edge-router "plc-siemens-router" --tunneler-enabled -o /tmp/plc-siemens-router.erott.jwt
+
 ziti edge list edge-routers
 
 ziti edge update identity hmi-siemens-router --role-attributes hmi-siemens-attr
 
-ziti edge create identity "plc-siemens-tunneler" -o /tmp/plc-siemens-tunneler.ott.jwt --role-attributes plc-siemens-attr
+ziti edge update identity plc-siemens-router --role-attributes plc-siemens-attr
 
 ziti edge list identities
 
 ziti edge create config "hmi-siemens-config" intercept.v1 '{"protocols":["tcp"],"addresses":["10.11.12.13"], "portRanges":[{"low":102, "high":102}]}'
 
-ziti edge create config "plc-siemens-config" host.v1 '{"protocol":"tcp", "address":"plcsiemens","port":102}'
+ziti edge create config "plc-siemens-config" host.v1 '{"protocol":"tcp", "address":"127.0.0.1","port":102}'
 
 ziti edge list configs
 
@@ -77,14 +79,8 @@ ziti edge policy-advisor services plc-siemens-service --quiet
 
 BASH
 
-ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/plc-siemens-tunneler.ott.jwt)" \
+ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/plc-siemens-router.erott.jwt)" \
 docker compose --profile=host-siemens up --detach
-
-docker compose exec --privileged --no-TTY plcsiemens bash << BASH
-
-./iptables-rules.sh
-
-BASH
 
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-siemens-router.erott.jwt)" \
 docker compose --profile=client-siemens up --detach
@@ -92,26 +88,30 @@ docker compose --profile=client-siemens up --detach
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/plc-beckhoff-tunneler.ott.jwt)" \
 docker compose --profile=host-beckhoff up --detach
 
-docker compose exec --privileged --no-TTY plcbeckhoff bash << BASH
-
-./iptables-rules.sh
-
-BASH
-
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-beckhoff-router.erott.jwt)" \
 docker compose --profile=client-beckhoff up --detach
 
 ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/plc-omron-tunneler.ott.jwt)" \
 docker compose --profile=host-omron up --detach
 
-ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-omron-router.erott.jwt)" \
-docker compose --profile=client-omron up --detach
+# ZITI_ENROLL_TOKEN="$(docker compose exec --no-TTY ziti-ctrl cat /tmp/hmi-omron-router.erott.jwt)" \
+# docker compose --profile=client-omron up --detach
+
+docker compose exec --privileged --no-TTY plcsiemens bash << BASH
+
+./iptables-rules.sh
+
+BASH
+
+docker compose exec --privileged --no-TTY plcbeckhoff bash << BASH
+
+./iptables-rules.sh
+
+BASH
 
 timeout 5s docker compose logs hmisiemens --no-log-prefix --follow || true
 
 timeout 5s docker compose logs hmibeckhoff --no-log-prefix --follow || true
-
-timeout 5s docker compose logs hmiomron --no-log-prefix --follow || true
 
 # read -p "Done! Press ENTER to destroy..."
 
