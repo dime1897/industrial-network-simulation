@@ -9,13 +9,13 @@ networks:
         - subnet: ${NET_ID:-172.20.0.0/16}
 
 services:
-  plcsiemens:
+  unsafe-plcsiemens:
     profiles:
       - plc
     build:
       context: ./PLCsiemens
       dockerfile: Dockerfile
-    container_name: ${PLCSIEMENS_CONTAINER_NAME:-plcsiemens}
+    container_name: ${PLCSIEMENS_CONTAINER_NAME:-unsafe-plcsiemens}
     environment:
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
       PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-192.168.3.1}
@@ -32,13 +32,13 @@ services:
         ipv4_address: ${PLCSIEMENS_ADDRESS:-172.20.1.1}
     command: ["python3", "PLCsiemens.py"]
 
-  plcbeckhoff:
+  unsafe-plcbeckhoff:
     profiles:
       - plc
     build:
       context: ./PLCbeckhoff
       dockerfile: Dockerfile
-    container_name: ${PLCBECKHOFF_CONTAINER_NAME:-plcbeckhoff}
+    container_name: ${PLCBECKHOFF_CONTAINER_NAME:-unsafe-plcbeckhoff}
     environment:
       PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
@@ -56,7 +56,7 @@ services:
         ipv4_address: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
     command: ["python3", "PLCbeckhoff.py"]
       
-  hmisiemens:
+  unsafe-hmisiemens:
     profiles:
       - hmi
     build:
@@ -68,13 +68,13 @@ services:
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
       PLCSIEMENS_RACK: ${PLCSIEMENS_RACK:-0}
       PLCSIEMENS_SLOT: ${PLCSIEMENS_SLOT:-1}
-    container_name: ${HMISIEMENS_CONTAINER_NAME:-hmisiemens}
+    container_name: ${HMISIEMENS_CONTAINER_NAME:-unsafe-hmisiemens}
     networks:
      local-testnet:
        ipv4_address: ${HMISIEMENS_ADDRESS:-172.20.1.2}
     command: ["python3", "HMIsiemens.py"]
 
-  hmibeckhoff:
+  unsafe-hmibeckhoff:
     profiles:
       - hmi
     build:
@@ -85,7 +85,7 @@ services:
     environment:
       PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
-    container_name: ${HMIBECKHOFF_CONTAINER_NAME:-hmibeckhoff}
+    container_name: ${HMIBECKHOFF_CONTAINER_NAME:-unsafe-hmibeckhoff}
     networks:
      local-testnet:
        ipv4_address: ${HMIBECKHOFF_ADDRESS:-172.20.2.2}
