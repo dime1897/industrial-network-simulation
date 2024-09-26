@@ -18,7 +18,7 @@ services:
     container_name: ${PLCSIEMENS_CONTAINER_NAME:-plcsiemens}
     environment:
       PLCSIEMENS_PORT: ${PLCSIEMENS_PORT:-102}
-      PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-192.168.3.1}
+      PLCOMRON_ADDRESS: ${PLCOMRON_ADDRESS:-10.31.32.33}
       PLCOMRON_PORT: ${PLCOMRON_PORT:-9600}
       PROCESSING_FAILURE_RATE: ${PROCESSING_FAILURE_RATE:-0.015}
       QUALITY_ASSURANCE_FAILURE_RATE: ${QUALITY_ASSURANCE_FAILURE_RATE:-0.008}
@@ -93,3 +93,4 @@ services:
     container_name: ${HMIBECKHOFF_CONTAINER_NAME:-hmibeckhoff}
     network_mode: service:ziti-hmibeckhoff-router
     command: ["python3", "HMIbeckhoff.py"]
+    

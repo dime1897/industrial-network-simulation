@@ -94,7 +94,7 @@ services:
     ziti-plcomron-tunneler:
         profiles:
             - host-omron
-        image: openziti/ziti-host
+        image: openziti/ziti-host:latest
         container_name: ziti-plcomron-tunneler
         networks:
             testnet:
