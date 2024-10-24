@@ -117,7 +117,7 @@ class Beckhoff:
             return
         time.sleep(1)
 
-        self.set_coils(12, [False, True]) # Lasciamo il prodotto all'interno della scatola
+        self.set_coils(12, [False, True]) # Lasciamo i prodotti all'interno della scatola
         self._log.debug("Releasing product...")
         time.sleep(1)
         if rnd.random() < self._releasing_area_failure_rate:

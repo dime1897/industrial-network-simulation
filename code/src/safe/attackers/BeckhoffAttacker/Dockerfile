@@ -1,7 +1,8 @@
 FROM python:latest
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED 1
 
-RUN apt update \
+RUN apt-get update -y \
     && apt-get install -y \
     net-tools \
     iputils-ping \
@@ -10,9 +11,8 @@ RUN apt update \
     iproute2 \
     dnsutils \
     netcat-traditional \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && mkdir /app
 
-RUN mkdir /app
 WORKDIR /app
 
 COPY . .

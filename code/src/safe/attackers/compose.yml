@@ -13,18 +13,16 @@ services:
       testnet:
     profiles: ["no-auto-start"]
 
-  # siemens-attacker:
-    # build:
-      # context: ../attackers/SiemensAttacker
-      # dockerfile: Dockerfile
-    # environment:
-      # PLCOMRON_REAL_ADDRESS: ${PLCSIEMENS_REAL_ADDRESS:-172.19.1.1}
-      # PLCOMRON_FAKE_ADDRESS: ${PLCSIEMENS_FAKE_ADDRESS:-10.11.12.13}
-      # PLCOMRON_PORT: ${PLCSIEMENS_PORT:-102}
-      # PLCSIEMENS_RACK: ${PLCSIEMENS_RACK:-0}
-      # PLCSIEMENS_SLOT: ${PLCSIEMENS_SLOT:-1}
-    # container_name: ${SIEMENS_ATTACKER_CONTAINER_NAME:-siemens-attacker}
-    # networks:
-      # testnet:
-    # profiles: ["no-auto-start"]
-    # command: ["python3", "SiemensAttacker.py"]
+  beckhoff-attacker:
+    build:
+      context: ../attackers/BeckhoffAttacker
+      dockerfile: Dockerfile
+    environment:
+      PLCBECKHOFF_REAL_ADDRESS: ${PLCBECKHOFF_REAL_ADDRESS:-172.19.2.1}
+      PLCBECKHOFF_FAKE_ADDRESS: ${PLCBECKHOFF_FAKE_ADDRESS:-10.21.22.23}
+      PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
+    container_name: ${BECKHOFF_ATTACKER_CONTAINER_NAME:-beckhoff-attacker}
+    networks:
+      testnet:
+    profiles: ["no-auto-start"]
+    command: ["python3", "BeckhoffAttacker.py"]

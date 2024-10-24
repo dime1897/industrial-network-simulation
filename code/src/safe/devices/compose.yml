@@ -88,7 +88,7 @@ services:
       ziti-hmibeckhoff-router:
         condition: service_healthy
     environment:
-      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-10.21.22.23}
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.19.2.1}
       PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
     container_name: ${HMIBECKHOFF_CONTAINER_NAME:-hmibeckhoff}
     network_mode: service:ziti-hmibeckhoff-router

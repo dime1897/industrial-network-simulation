@@ -20,6 +20,7 @@ services:
         working_dir: /home/ziggy
         environment:
             HOME: /home/ziggy
+            PFXLOG_NO_JSON: true
         volumes:
             - ziti-ctrl:/home/ziggy/quickstart
         expose:

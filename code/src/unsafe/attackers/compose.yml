@@ -11,3 +11,16 @@ services:
       local-testnet:
     profiles: ["no-auto-start"]
     command: ["python3", "OmronAttacker.py"]
+
+  unsafe-beckhoff-attacker:
+    build:
+      context: ../attackers/BeckhoffAttacker
+      dockerfile: Dockerfile
+    environment:
+      PLCBECKHOFF_ADDRESS: ${PLCBECKHOFF_ADDRESS:-172.20.2.1}
+      PLCBECKHOFF_PORT: ${PLCBECKHOFF_PORT:-502}
+    container_name: ${BECKHOFF_ATTACKER_CONTAINER_NAME:-unsafe-beckhoff-attacker}
+    networks:
+      local-testnet:
+    profiles: ["no-auto-start"]
+    command: ["python3", "BeckhoffAttacker.py"]
